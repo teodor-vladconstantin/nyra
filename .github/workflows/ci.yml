@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      # Migrările din supabase/migrations pe Postgres WASM (PGlite): fără bază de date reală.
+      - run: npm run test:db
+      - uses: actions/cache@v4
+        with:
+          path: web/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('web/package-lock.json') }}-${{ hashFiles('web/**/*.ts', 'web/**/*.tsx') }}
+          restore-keys: next-${{ runner.os }}-${{ hashFiles('web/package-lock.json') }}-
+      - run: npm run build
+        env:
+          # Valori fictive, doar ca build-ul să treacă; nu sunt secrete.
+          NEXT_PUBLIC_SUPABASE_URL: https://ci.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-key
+
+  parser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: parser
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: parser/uv.lock
+      - run: uv sync --frozen
+      - run: uv run python extract.py
+      - run: uv run python tests/test_parser.py
