@@ -40,3 +40,4 @@ next-env.d.ts
 
 # valori publice de build, comise intenționat
 !.env.production
+!.env*.example
