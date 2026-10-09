@@ -196,7 +196,7 @@ def merged_months(intervals: list[tuple[date, date]]) -> int:
 
 TITLE_RULES = (
     ("junior", r"\b(intern|internship|stagiar|trainee|practicant|apprentice|ucenic)\b"),
-    ("lead", r"\b(lead|head|principal|staff|director|manager|sef|coordonator|cto|cfo|ceo|vp|architect|arhitect)\b"),
+    ("lead", r"\b(lead|head|principal|staff|director|cto|cfo|ceo|vp|engineering manager|team manager|manager de echipa|sef de echipa)\b"),
     ("senior", r"\b(senior|sr)\b"),
     ("junior", r"\b(junior|jr|entry|asistent|assistant|debutant)\b"),
     ("mid", r"\b(mid|middle|medior|intermediate)\b"),
@@ -235,6 +235,44 @@ def contact_fields(parsed: "ExtractResult", text: str) -> dict:
     }
 
 
+# ---------------------------------------------------------------- verificare față de textul CV-ului (grounding)
+def _words(s: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+", fold(s or ""))
+
+
+class Grounder:
+    """Verifică dacă ce a extras AI-ul chiar apare în textul CV-ului (local, fără apeluri plătite).
+    O valoare plauzibilă dar inventată (angajator greșit, an fals) nu o prinde nicio regulă de format.
+    Fără text suficient (parsare eșuată) nu verifică nimic."""
+
+    def __init__(self, text: str):
+        self.raw = text or ""
+        words = _words(self.raw)
+        self.on = len(words) >= 20
+        self.words = set(words)
+        self.phrase = f" {' '.join(words)} "
+        self.digits = re.sub(r"\D", "", self.raw)
+
+    def has(self, value: str | None, need: float = 0.6) -> bool:
+        v = _words(value or "")
+        toks = [w for w in v if len(w) > 2]
+        if not self.on or not toks:
+            return True
+        if f" {' '.join(v)} " in self.phrase:
+            return True
+        return sum(w in self.words for w in toks) / len(toks) >= need
+
+    def has_year(self, year: int | None) -> bool:
+        return not self.on or not year or re.search(rf"(?<!\d){year}(?!\d)", self.raw) is not None
+
+    def has_phone(self, phone: str) -> bool:
+        d = re.sub(r"\D", "", phone)
+        return not self.on or len(d) < 6 or d[-9:] in self.digits
+
+    def has_email(self, email: str) -> bool:
+        return not self.on or email.lower() in self.raw.lower()
+
+
 def to_rows(result: dict, org_id: str, candidate_id: str, today: date | None = None, text: str = "") -> tuple[list[dict], dict, list[str]]:
     """(rânduri candidate_experiences, profil: competențe/educație/rezumat + contact, probleme găsite)."""
     today = today or date.today()
@@ -244,6 +282,7 @@ def to_rows(result: dict, org_id: str, candidate_id: str, today: date | None = N
         return [], {"skills": [], "education": [], "summary": "", "contact": {}}, [f"rezultat invalid: {e.error_count()} erori"]
 
     issues: list[str] = []
+    g = Grounder(text)
     prepared = []
     for i, e in enumerate(parsed.experiences):
         company, role = " ".join(e.company_name.split()), " ".join(e.role_title.split())
@@ -269,6 +308,12 @@ def to_rows(result: dict, org_id: str, candidate_id: str, today: date | None = N
         if start and end and end < start:
             issues.append(f"experiența {i + 1}: final înainte de început")
             end = start  # nu „prezent": un final necunoscut nu trebuie să umfle experiența
+        if company and not g.has(company):
+            issues.append(f"experiența {i + 1}: compania „{company}” nu apare în textul CV-ului")
+        if role and not g.has(role):
+            issues.append(f"experiența {i + 1}: rolul „{role}” nu apare în textul CV-ului")
+        if not g.has_year(start.year if start else None):
+            issues.append(f"experiența {i + 1}: anul {start.year} nu apare în textul CV-ului")
         prepared.append((i, e, company or "Necunoscut", role or "Necunoscut", start, end))
 
     known = [(s, en or today) for *_, s, en in prepared if s]
@@ -294,8 +339,18 @@ def to_rows(result: dict, org_id: str, candidate_id: str, today: date | None = N
         })
 
     all_skills = clean_skills(parsed.skills + [s for r in rows for s in r["extracted_skills"]])
+    contact = contact_fields(parsed, text)
+    if contact["name"] and not g.has(contact["name"], need=0.5):
+        issues.append(f"numele „{contact['name']}” nu apare în textul CV-ului")
+    if contact["email"] and not g.has_email(contact["email"]):
+        issues.append("emailul extras nu apare în textul CV-ului")
+        found = EMAIL.search(text)
+        contact["email"] = found.group(0).lower()[:320] if found else None
+    if contact["phone"] and not g.has_phone(contact["phone"]):
+        issues.append("telefonul extras nu apare în textul CV-ului")
+        contact["phone"] = None
     profile = {"skills": all_skills, "education": parsed.education, "summary": (parsed.summary or "").strip(),
-               "contact": contact_fields(parsed, text)}
+               "contact": contact}
     if not rows:
         issues.append("nicio experiență profesională găsită")
     return rows, profile, issues
@@ -351,4 +406,15 @@ if __name__ == "__main__":
     assert rows == [] and len(issues) == 2
     rows, _, issues = to_rows({"experiences": "gunoi"}, "o", "c", today)
     assert rows == [] and issues and issues[0].startswith("rezultat invalid")
+    # grounding: valori plauzibile dar inventate ajung în issues, fără cost de API
+    cv = ("Maria Pop maria.pop@example.com 0722 111 222 Cluj-Napoca. Experiență: Backend Developer la Acme SRL, "
+          "martie 2022 - prezent. Developer la Beta Software 2019 - 2022. Python, Docker, PostgreSQL, Linux, Git, SQL.")
+    ok = {"full_name": "Maria Pop", "email": "maria.pop@example.com", "phone": "0722 111 222", "experiences": [
+        {"company_name": "Acme SRL", "role_title": "Backend Developer", "start_date": "2022-03", "is_current": True}]}
+    assert to_rows(ok, "o", "c", today, text=cv)[2] == []
+    bad = {**ok, "email": "altcineva@x.ro", "phone": "0799 000 000", "experiences": [
+        {"company_name": "Globex Industries", "role_title": "Backend Developer", "start_date": "2015-03"}]}
+    _, prof, iss = to_rows(bad, "o", "c", today, text=cv)
+    assert len(iss) == 4 and prof["contact"]["email"] == "maria.pop@example.com" and prof["contact"]["phone"] is None, iss
+    assert infer_seniority("Engineering Manager", 0, 1) == "lead" and infer_seniority("Store Manager", 70, 1) == "senior"
     print("OK: extract")

@@ -1,0 +1,10 @@
+{
+  "full_name": "Maria Pop",
+  "email": "maria.pop@example.com",
+  "phone": "0722 111 222",
+  "experiences": [
+    {"company_name": "Acme SRL", "role_title": "Backend Developer", "start_date": "2022-03", "end_date": null, "seniority_level": "mid"},
+    {"company_name": "Beta Software", "role_title": "Developer", "start_date": "2019-01", "end_date": "2022-02", "seniority_level": null}
+  ],
+  "skills": ["Python", "Docker", "PostgreSQL"]
+}

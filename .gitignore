@@ -14,3 +14,9 @@ supabase/.temp
 .env*
 !.env.example
 !.env*.example
+
+# Date personale (CV-uri reale) și cache de evaluare
+parser/eval/cvs/
+parser/eval/.cache/
+parser/eval/labels/*.json
+!parser/eval/labels/EXAMPLE.json
