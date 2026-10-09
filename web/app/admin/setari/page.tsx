@@ -78,7 +78,7 @@ export default async function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Echipă</CardTitle>
-            <CardDescription>Conturile cu acces la Nyra. Se administrează din Supabase.</CardDescription>
+            <CardDescription>Conturile cu acces la Nyra By Joben. Se administrează din Supabase.</CardDescription>
           </CardHeader>
           <CardContent>
             {!members?.length ? (

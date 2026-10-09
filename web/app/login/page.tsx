@@ -44,9 +44,12 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
           <div className="mb-3 flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.svg" alt="" width={40} height={40} className="size-10" />
-            <span className="text-2xl font-bold tracking-[-0.04em]">Nyra</span>
+            <span className="leading-tight">
+              <span className="block text-2xl font-bold tracking-[-0.04em]">Nyra</span>
+              <span className="block text-caption font-medium text-muted-foreground">By Joben</span>
+            </span>
           </div>
-          <CardTitle className="text-title">Intră în <span className="text-brand">Nyra</span></CardTitle>
+          <CardTitle className="text-title">Intră în <span className="text-brand">Nyra</span> <span className="text-sm font-medium text-muted-foreground">By Joben</span></CardTitle>
           <CardDescription>Parser de CV-uri pentru echipa de recrutare.</CardDescription>
         </CardHeader>
         <CardContent>

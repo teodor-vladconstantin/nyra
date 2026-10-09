@@ -16,7 +16,7 @@ export const getOrg = cache(async () => {
     .limit(1)
     .maybeSingle();
   if (error) throw error;
-  if (!m) throw new Error("Contul nu are acces la Nyra (lipsește rândul din memberships).");
+  if (!m) throw new Error("Contul nu are acces la Nyra By Joben (lipsește rândul din memberships).");
   return { supabase, user, orgId: m.organization_id as string, role: m.role as "admin" | "viewer" };
 });
 

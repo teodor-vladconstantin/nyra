@@ -9,7 +9,7 @@ import "./globals.css";
 const poppins = Poppins({ subsets: ["latin", "latin-ext"], weight: ["400", "500", "600", "700"], display: "swap", variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: { default: "Nyra", template: "%s · Nyra" },
+  title: { default: "Nyra · By Joben", template: "%s · Nyra By Joben" },
   description: "Recrutare, simplu.",
 };
 

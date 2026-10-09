@@ -18,7 +18,7 @@ export function MobileNav({ orgName }: { orgName?: string }) {
       </DialogTrigger>
       <DialogContent className="left-0 top-0 h-full max-w-[17rem] translate-x-0 translate-y-0 content-start gap-6 rounded-none border-y-0 border-l-0 bg-sidebar p-4 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:rounded-none">
         <DialogTitle className="sr-only">Meniu</DialogTitle>
-        <DialogDescription className="sr-only">Navigare între secțiunile Nyra</DialogDescription>
+        <DialogDescription className="sr-only">Navigare între secțiunile Nyra By Joben</DialogDescription>
         <Brand orgName={orgName} />
         <NavLinks onNavigate={() => setOpen(false)} />
       </DialogContent>
