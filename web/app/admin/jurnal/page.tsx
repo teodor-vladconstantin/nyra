@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { NativeSelect } from "@/components/native-select";
@@ -67,11 +67,11 @@ export default async function AuditPage({ searchParams: sp }: { searchParams: Pa
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="from">De la</Label>
-          <Input id="from" name="from" type="date" defaultValue={from ?? ""} />
+          <DatePicker id="from" name="from" defaultValue={from} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="to">Până la</Label>
-          <Input id="to" name="to" type="date" defaultValue={to ?? ""} />
+          <DatePicker id="to" name="to" defaultValue={to} />
         </div>
         <div className="flex items-end gap-2">
           <Button type="submit">Filtrează</Button>

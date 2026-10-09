@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/native-select";
@@ -89,10 +90,10 @@ export function ExperienceDialog({ candidateId, experience: e }: { candidateId: 
             </NativeSelect>
           </Field>
           <Field prefix={p} name="start_date" label="Început" errors={errors}>
-            <Input {...fieldProps(p, "start_date", errors)} type="date" defaultValue={e?.start_date ?? ""} />
+            <DatePicker {...fieldProps(p, "start_date", errors)} defaultValue={e?.start_date} />
           </Field>
           <Field prefix={p} name="end_date" label="Final" errors={errors}>
-            <Input {...fieldProps(p, "end_date", errors)} type="date" defaultValue={e?.end_date ?? ""} disabled={current} />
+            <DatePicker {...fieldProps(p, "end_date", errors)} defaultValue={e?.end_date} disabled={current} />
           </Field>
           <label className="flex items-center gap-2 text-sm sm:col-span-2">
             <input type="checkbox" name="current" checked={current} onChange={(ev) => setCurrent(ev.target.checked)} className="size-4 accent-primary" />
