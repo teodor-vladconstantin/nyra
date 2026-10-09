@@ -66,15 +66,19 @@ export function DatePicker({ id, name, defaultValue, disabled, className, ...ari
       </button>
 
       {open && (
-        <div role="dialog" aria-label="Alege data" className="absolute left-0 top-full z-50 mt-1 w-64 rounded-md border bg-popover p-3 text-popover-foreground shadow-md">
+        <div role="dialog" aria-label="Alege data" className="absolute left-0 top-full z-50 mt-1 w-72 rounded-md border bg-popover p-3 text-popover-foreground shadow-md">
           <div className="mb-2 flex items-center gap-1">
             <Button type="button" variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => go(-1)} aria-label="Luna anterioară"><ChevronLeft /></Button>
-            <NativeSelect aria-label="Luna" value={view.m} onChange={(e) => setView((v) => ({ ...v, m: +e.target.value }))} className="h-8 pl-2 pr-6 text-xs">
-              {MONTHS.map((n, i) => <option key={n} value={i}>{n}</option>)}
-            </NativeSelect>
-            <NativeSelect aria-label="Anul" value={view.y} onChange={(e) => setView((v) => ({ ...v, y: +e.target.value }))} className="h-8 w-[4.75rem] pl-2 pr-6 text-xs">
-              {years.sort((a, b) => b - a).map((y) => <option key={y} value={y}>{y}</option>)}
-            </NativeSelect>
+            <div className="min-w-0 flex-1">
+              <NativeSelect aria-label="Luna" value={view.m} onChange={(e) => setView((v) => ({ ...v, m: +e.target.value }))} className="h-8 pl-2 pr-6 text-xs capitalize">
+                {MONTHS.map((n, i) => <option key={n} value={i}>{n}</option>)}
+              </NativeSelect>
+            </div>
+            <div className="w-[4.75rem] shrink-0">
+              <NativeSelect aria-label="Anul" value={view.y} onChange={(e) => setView((v) => ({ ...v, y: +e.target.value }))} className="h-8 pl-2 pr-6 text-xs">
+                {years.sort((a, b) => b - a).map((y) => <option key={y} value={y}>{y}</option>)}
+              </NativeSelect>
+            </div>
             <Button type="button" variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => go(1)} aria-label="Luna următoare"><ChevronRight /></Button>
           </div>
           <div className="grid grid-cols-7 gap-0.5 text-center text-xs">
