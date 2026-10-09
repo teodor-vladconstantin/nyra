@@ -1,0 +1,113 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ChevronLeft, Pencil } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState, PageHeader } from "@/components/page-header";
+import { StatusBadge } from "@/components/badges";
+import { SubmitButton } from "@/components/submit-button";
+import { getOrg } from "@/lib/org";
+import { SENIORITY_LABELS } from "@/lib/experience";
+import { JOB_STATUS, type Job, type JobMatch } from "@/lib/jobs";
+import { deleteJob, setJobStatus, toggleCandidate, updateJob } from "../actions";
+import { JobForm } from "../job-form";
+
+export const metadata = { title: "Job" };
+const UUID = /^[0-9a-f-]{36}$/i;
+
+export default async function JobPage({ params }: { params: { id: string } }) {
+  if (!UUID.test(params.id)) notFound();
+  const { supabase, orgId, role } = await getOrg();
+  const isAdmin = role === "admin";
+  const [{ data: job, error }, { data: matches, error: mErr }] = await Promise.all([
+    supabase.from("jobs").select("*").eq("id", params.id).eq("organization_id", orgId).maybeSingle(),
+    supabase.rpc("job_matches", { p_job: params.id, p_limit: 100 }),
+  ]);
+  if (error || mErr) throw error ?? mErr;
+  if (!job) notFound();
+  const j = job as Job;
+  const rows = (matches ?? []) as JobMatch[];
+  const attached = rows.filter((r) => r.attached).length;
+
+  return (
+    <>
+      <Link href="/admin/joburi" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <ChevronLeft className="size-4" /> Joburi
+      </Link>
+      <PageHeader
+        title={j.title}
+        description={[JOB_STATUS[j.status], j.location, j.contract_type].filter(Boolean).join(" · ")}
+        actions={isAdmin ? (
+          <>
+            <form action={setJobStatus.bind(null, j.id, j.status === "active" ? "closed" : "active")}>
+              <SubmitButton variant="outline">{j.status === "active" ? "Închide jobul" : "Redeschide"}</SubmitButton>
+            </form>
+            <form action={deleteJob.bind(null, j.id)}>
+              <SubmitButton variant="outline" className="text-destructive">Șterge</SubmitButton>
+            </form>
+          </>
+        ) : undefined}
+      />
+
+      {(j.description || j.requirements || j.keywords.length > 0) && (
+        <div className="mb-6 space-y-3 rounded-lg border bg-card p-5 text-sm">
+          {j.description && <p className="whitespace-pre-line">{j.description}</p>}
+          {j.requirements && <p className="whitespace-pre-line text-muted-foreground">{j.requirements}</p>}
+          {j.keywords.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {j.keywords.map((k) => <span key={k} className="rounded-full bg-muted px-2 py-0.5 text-caption">{k}</span>)}
+            </div>
+          )}
+        </div>
+      )}
+
+      {isAdmin && (
+        <details className="mb-6 rounded-lg border bg-card p-5">
+          <summary className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium"><Pencil className="size-4" /> Editează jobul</summary>
+          <div className="mt-4 max-w-3xl"><JobForm action={updateJob.bind(null, j.id)} job={j} submit="Salvează" /></div>
+        </details>
+      )}
+
+      <h2 className="mb-3 text-sm font-medium">
+        Candidați potriviți <span className="text-muted-foreground">· {attached} atașați</span>
+      </h2>
+      {rows.length === 0 ? (
+        <EmptyState title="Niciun candidat încă">Încarcă CV-uri la Candidați; apar aici clasate după potrivire.</EmptyState>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Candidat</TableHead><TableHead>Rol curent</TableHead><TableHead>Experiență</TableHead>
+                <TableHead>Status</TableHead><TableHead>Potrivire</TableHead>{isAdmin && <TableHead className="w-0" />}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((r) => (
+                <TableRow key={r.candidate_id}>
+                  <TableCell>
+                    <Link href={`/admin/candidati/${r.candidate_id}`} className="font-medium underline-offset-4 hover:underline">{r.name ?? "(în procesare)"}</Link>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {r.last_role ?? "—"}{r.seniority ? ` · ${SENIORITY_LABELS[r.seniority as keyof typeof SENIORITY_LABELS] ?? r.seniority}` : ""}
+                  </TableCell>
+                  <TableCell className="tabular-nums text-muted-foreground">{Number(r.years_experience) ? `${r.years_experience} ani` : "—"}</TableCell>
+                  <TableCell><StatusBadge status={r.status} /></TableCell>
+                  <TableCell className="tabular-nums">
+                    {r.total ? `${Math.round((r.matched / r.total) * 100)}% (${r.matched}/${r.total})` : "—"}
+                  </TableCell>
+                  {isAdmin && (
+                    <TableCell>
+                      <form action={toggleCandidate.bind(null, j.id, r.candidate_id, r.attached)}>
+                        <SubmitButton size="sm" variant={r.attached ? "secondary" : "outline"}>{r.attached ? "Atașat ✓" : "Atașează"}</SubmitButton>
+                      </form>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </>
+  );
+}

@@ -2,8 +2,8 @@
 import assert from "assert";
 import { db, A, B, one, count, as, su } from "./_pglite.mjs";
 
-// Schema veche a dispărut
-for (const t of ["jobs", "applications", "email_log", "consent_records", "terms_versions", "invitations"]) {
+// Schema veche a dispărut (jobs a revenit în migrarea 11, testată în jobs.test.mjs)
+for (const t of ["applications", "email_log", "consent_records", "terms_versions", "invitations"]) {
   assert.equal((await one("select to_regclass($1) r", [`public.${t}`])).r, null, `${t} ar trebui șters`);
 }
 

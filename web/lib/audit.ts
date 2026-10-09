@@ -10,6 +10,8 @@ export const ENTITY_LABELS: Record<string, string> = {
   tags: "Etichetă",
   candidate_tags: "Etichetă candidat",
   saved_filters: "Filtru salvat",
+  jobs: "Job",
+  job_candidates: "Candidat la job",
 };
 
 export const ACTION_LABELS: Record<string, string> = {
