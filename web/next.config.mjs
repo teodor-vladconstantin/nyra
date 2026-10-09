@@ -30,6 +30,10 @@ const securityHeaders = [
 const nextConfig = {
   // Un CV (max 10 MB) per server action.
   experimental: { serverActions: { bodySizeLimit: "11mb" } },
+  // Browserele cer /favicon.ico chiar dacă pagina declară icon.svg.
+  async redirects() {
+    return [{ source: "/favicon.ico", destination: "/icon.svg", permanent: false }];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

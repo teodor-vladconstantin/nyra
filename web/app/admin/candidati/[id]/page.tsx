@@ -226,7 +226,7 @@ export default async function CandidatePage({ params, searchParams }: { params: 
 
             <TabsContent value="note" className="space-y-4">
               {isAdmin && (
-                <form action={addNote.bind(null, c.id)} className="space-y-2">
+                <form key={notes?.length ?? 0} action={addNote.bind(null, c.id)} className="space-y-2">
                   <label htmlFor="note" className="sr-only">Notă nouă</label>
                   <Textarea id="note" name="body" required maxLength={5000} rows={3} placeholder="Notă internă, ex. „Sunat, disponibil din martie”" />
                   <SubmitButton size="sm" pendingText="Se salvează…">Adaugă nota</SubmitButton>
