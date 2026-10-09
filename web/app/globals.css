@@ -135,6 +135,55 @@
   ::selection {
     background: oklch(var(--ring) / 0.3);
   }
+
+  /* Controale native în stilul aplicației (lista de opțiuni a <select> și fereastra calendarului rămân ale browserului, dar urmează color-scheme). */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(var(--muted-foreground) / 0.4) transparent;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    @apply size-4 shrink-0 cursor-pointer appearance-none border border-input bg-transparent bg-center bg-no-repeat transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  input[type="checkbox"] { @apply rounded-[4px]; }
+  input[type="radio"] { @apply rounded-full; }
+  input[type="checkbox"]:checked,
+  input[type="radio"]:checked {
+    @apply border-primary bg-primary;
+  }
+  /* Bifa și punctul sunt #111113 = primary-foreground (galbenul are mereu text închis). */
+  input[type="checkbox"]:checked {
+    background-size: 0.75rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111113' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  }
+  input[type="radio"]:checked {
+    background-image: radial-gradient(circle, #111113 0 32%, transparent 36%);
+  }
+
+  /* Fără săgeți de incrementare: valorile se tastează. */
+  input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    border-radius: 4px;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+  input[type="date"]::-webkit-datetime-edit-day-field:focus,
+  input[type="date"]::-webkit-datetime-edit-month-field:focus,
+  input[type="date"]::-webkit-datetime-edit-year-field:focus {
+    background: oklch(var(--primary));
+    color: oklch(var(--primary-foreground));
+    border-radius: 2px;
+    outline: none;
+  }
+
+  summary { list-style: none; }
+  summary::-webkit-details-marker { display: none; }
 }
 
 /* Tranziția cardurilor din kanban (View Transitions API; browserele fără suport sar peste). */

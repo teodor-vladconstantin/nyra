@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Pencil } from "lucide-react";
+import { ChevronDown, ChevronLeft, Pencil } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/badges";
@@ -61,8 +61,11 @@ export default async function JobPage({ params }: { params: { id: string } }) {
       )}
 
       {isAdmin && (
-        <details className="mb-6 rounded-lg border bg-card p-5">
-          <summary className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium"><Pencil className="size-4" /> Editează jobul</summary>
+        <details className="group mb-6 rounded-lg border bg-card p-5">
+          <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+            <Pencil className="size-4" /> Editează jobul
+            <ChevronDown className="ml-auto size-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
+          </summary>
           <div className="mt-4 max-w-3xl"><JobForm action={updateJob.bind(null, j.id)} job={j} submit="Salvează" /></div>
         </details>
       )}
