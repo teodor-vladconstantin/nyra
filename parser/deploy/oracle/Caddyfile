@@ -1,0 +1,5 @@
+# Certificat Let's Encrypt automat pentru {$PARSER_DOMAIN}; traficul merge către parser.
+{$PARSER_DOMAIN} {
+	encode gzip
+	reverse_proxy parser:8000
+}
