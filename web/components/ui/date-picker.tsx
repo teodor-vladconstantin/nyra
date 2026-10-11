@@ -31,7 +31,11 @@ export function DatePicker({ id, name, defaultValue, disabled, className, ...ari
 
   useEffect(() => {
     if (!open) return;
-    const outside = (e: PointerEvent) => { if (!root.current?.contains(e.target as Node)) setOpen(false); };
+    // Lista lunii/anului (Radix Select) e în portal, în afara `root`: un click acolo nu închide calendarul.
+    const outside = (e: PointerEvent) => {
+      const t = e.target as Element;
+      if (!root.current?.contains(t) && !t.closest?.('[role="listbox"]')) setOpen(false);
+    };
     document.addEventListener("pointerdown", outside);
     return () => document.removeEventListener("pointerdown", outside);
   }, [open]);
@@ -46,7 +50,7 @@ export function DatePicker({ id, name, defaultValue, disabled, className, ...ari
   if (!years.includes(view.y)) years.push(view.y);
 
   return (
-    <div ref={root} className="relative" onKeyDown={(e) => { if (e.key === "Escape" && open) { e.stopPropagation(); setOpen(false); } }}>
+    <div ref={root} className="relative" onKeyDown={(e) => { if (e.key === "Escape" && open && root.current?.contains(e.target as Node)) { e.stopPropagation(); setOpen(false); } }}>
       <input type="hidden" name={name} value={value} disabled={disabled} />
       <button
         type="button"

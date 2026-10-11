@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/native-select";
+import { SuggestInput } from "@/components/suggest-input";
 import { SENIORITY_LABELS } from "@/lib/experience";
 import { SORTS, STATUS_LABELS, type Filters, type Tag } from "@/lib/candidates";
 
@@ -23,8 +24,7 @@ export function FilterForm({ sp, basePath, roleOptions, tags, filtered, showStat
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="role">Rol curent</Label>
-        <Input id="role" name="role" list="role-options" defaultValue={sp.role} placeholder="Orice rol" />
-        <datalist id="role-options">{roleOptions.map((r) => <option key={r} value={r} />)}</datalist>
+        <SuggestInput id="role" name="role" defaultValue={sp.role} placeholder="Orice rol" options={roleOptions} />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="skill">Skill</Label>

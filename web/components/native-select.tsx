@@ -1,23 +1,46 @@
+"use client";
 import * as React from "react";
-import { ChevronDown } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-// <select> nativ stilizat ca inputurile shadcn: merge în formulare server fără JS și e accesibil implicit.
-export const NativeSelect = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement>>(
-  ({ className, children, ...props }, ref) => (
-    <div className="relative">
-      <select
-        ref={ref}
-        className={cn(
-          "flex h-9 w-full appearance-none rounded-md border border-input bg-background py-1 pl-3 pr-8 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-          className,
-        )}
-        {...props}
-      >
-        {children}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-    </div>
-  ),
-);
-NativeSelect.displayName = "NativeSelect";
+// Radix rezervă "" pentru „fără selecție", deci opțiunea cu value="" primește un înlocuitor intern.
+const EMPTY = "__empty__";
+
+type Props = {
+  id?: string; name?: string; className?: string; disabled?: boolean;
+  value?: string | number; defaultValue?: string | number;
+  onChange?: (e: { target: { value: string; name: string } }) => void;
+  children?: React.ReactNode;
+  "aria-label"?: string; "aria-invalid"?: boolean; "aria-describedby"?: string;
+};
+
+// Același API ca un <select> nativ (copii <option>, value/defaultValue, name, onChange cu e.target.value),
+// dar lista e dropdown-ul din tema aplicației. `name` => input ascuns, deci merge în formulare GET/server actions.
+export function NativeSelect({ id, name, className, disabled, value, defaultValue, onChange, children, ...aria }: Props) {
+  const options = React.Children.toArray(children).flatMap((c) =>
+    React.isValidElement<{ value?: string | number; children?: React.ReactNode }>(c)
+      ? [{ value: String(c.props.value ?? ""), label: c.props.children }]
+      : [],
+  );
+  const [inner, setInner] = React.useState(String(defaultValue ?? ""));
+  const current = value !== undefined ? String(value) : inner;
+  const pick = (v: string) => {
+    const real = v === EMPTY ? "" : v;
+    setInner(real);
+    onChange?.({ target: { value: real, name: name ?? "" } });
+  };
+
+  return (
+    <>
+      {name && <input type="hidden" name={name} value={current} disabled={disabled} />}
+      <Select value={current === "" ? EMPTY : current} onValueChange={pick} disabled={disabled}>
+        <SelectTrigger id={id} className={cn("aria-[invalid=true]:border-destructive", className)} {...aria}>
+          <SelectValue>{options.find((o) => o.value === current)?.label}</SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((o) => <SelectItem key={o.value} value={o.value === "" ? EMPTY : o.value}>{o.label}</SelectItem>)}
+        </SelectContent>
+      </Select>
+    </>
+  );
+}
