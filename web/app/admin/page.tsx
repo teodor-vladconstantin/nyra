@@ -81,7 +81,9 @@ async function Overview() {
     byParsing.set(r.parsing_status, (byParsing.get(r.parsing_status) ?? 0) + 1);
   }
   const weeks = weeklyUploads(rows.map((r) => r.created_at), WEEKS);
-  const topSkills = topCounts((skillRows.data ?? []).flatMap((r) => (r.skills as string[]) ?? []), 8);
+  // Parserul mai strecoară în skills linii lungi (certificări, titluri): o competență reală are câteva cuvinte.
+  const isSkill = (s: string) => s.length <= 40 && s.split(/\s+/).length <= 4;
+  const topSkills = topCounts((skillRows.data ?? []).flatMap((r) => (r.skills as string[]) ?? []).filter(isSkill), 8);
   const total = rows.length;
   const processing = (byParsing.get("pending") ?? 0) + (byParsing.get("processing") ?? 0);
   const review = byParsing.get("needs_review") ?? 0;
