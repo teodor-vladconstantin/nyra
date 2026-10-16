@@ -10,6 +10,9 @@ COPY --from=ghcr.io/astral-sh/uv:0.12 /uv /usr/local/bin/uv
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project
+# Modelul de embeddings (~220 MB) se descarcă la build, într-un director stabil: prima cerere nu mai descarcă nimic.
+ENV FASTEMBED_CACHE_PATH=/opt/fastembed
+RUN uv run --no-sync python -c "from fastembed import TextEmbedding; TextEmbedding('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')"
 COPY *.py ./
 
 EXPOSE 8000

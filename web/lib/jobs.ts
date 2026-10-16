@@ -20,3 +20,10 @@ export function parseKeywords(raw: string): string[] {
   }
   return out.slice(0, 30);
 }
+
+// Textul din care se calculează embedding-ul jobului (la fel de „larg" ca textul candidatului, tăiat de serviciu la ~512 tokeni).
+export function jobEmbeddingText(j: { title: string; description: string; requirements: string; location: string; keywords: string[] }): string {
+  return [j.title, j.keywords.join(", "), j.description, j.requirements, j.location].filter(Boolean).join("\n");
+}
+
+export type JobSemantic = { candidate_id: string; similarity: number };

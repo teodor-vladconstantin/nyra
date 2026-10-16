@@ -2,7 +2,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/org";
-import { JOB_STATUS, parseKeywords, type JobStatus } from "@/lib/jobs";
+import { JOB_STATUS, jobEmbeddingText, parseKeywords, type JobStatus } from "@/lib/jobs";
+import { embedTexts } from "@/lib/parser";
 
 const go = (path: string, msg: string, error = false) =>
   redirect(`${path}?toast=${encodeURIComponent(msg)}${error ? "&type=error" : ""}`);
@@ -22,6 +23,15 @@ function readJob(f: FormData, back: string) {
   };
 }
 
+// Calculează și salvează embedding-ul jobului; dacă serviciul nu răspunde, jobul rămâne fără (se poate relua din pagina lui).
+async function saveEmbedding(supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"], orgId: string, id: string, row: Parameters<typeof jobEmbeddingText>[0]) {
+  const vecs = await embedTexts([jobEmbeddingText(row)], "query");
+  if (!vecs) return false;
+  const { error } = await supabase.from("jobs").update({ embedding: vecs[0] }).eq("id", id).eq("organization_id", orgId);
+  if (error) console.error("save job embedding", error);
+  return !error;
+}
+
 export async function createJob(formData: FormData) {
   const row = readJob(formData, "/admin/joburi/nou");
   const { supabase, orgId } = await requireAdmin();
@@ -30,6 +40,7 @@ export async function createJob(formData: FormData) {
     console.error("create job", error);
     go("/admin/joburi/nou", "Jobul nu a putut fi salvat", true);
   }
+  await saveEmbedding(supabase, orgId, data!.id, row);
   revalidatePath("/admin/joburi");
   go(`/admin/joburi/${data!.id}`, "Jobul a fost creat");
 }
@@ -43,6 +54,7 @@ export async function updateJob(id: string, formData: FormData) {
     console.error("update job", error);
     go(path, "Modificările nu au putut fi salvate", true);
   }
+  await saveEmbedding(supabase, orgId, id, row);
   revalidatePath("/admin/joburi", "layout");
   go(path, "Jobul a fost actualizat");
 }
@@ -78,4 +90,15 @@ export async function toggleCandidate(jobId: string, candidateId: string, attach
     go(`/admin/joburi/${jobId}`, "Acțiunea a eșuat", true);
   }
   revalidatePath(`/admin/joburi/${jobId}`);
+}
+
+// Pentru joburile create înainte de matching-ul semantic sau când serviciul nu era disponibil.
+export async function embedJob(id: string) {
+  const { supabase, orgId } = await requireAdmin();
+  const { data: j } = await supabase.from("jobs").select("title, description, requirements, location, contract_type, keywords")
+    .eq("id", id).eq("organization_id", orgId).maybeSingle();
+  if (!j) go("/admin/joburi", "Jobul nu există", true);
+  const ok = await saveEmbedding(supabase, orgId, id, j!);
+  revalidatePath(`/admin/joburi/${id}`);
+  go(`/admin/joburi/${id}`, ok ? "Potrivirea semantică a fost calculată" : "Serviciul de parsing nu răspunde", !ok);
 }

@@ -17,6 +17,31 @@ const STUCK_MINUTES = 15;
 // ponytail: numărăm în aplicație pe cel mult 10.000 de rânduri; peste asta, trecem pe un RPC cu GROUP BY.
 const SCAN_LIMIT = 10000;
 
+const WEEKS = 8;
+
+// Numără datele pe ultimele `n` săptămâni (luni–duminică), cea mai veche prima; eticheta e ziua de luni (zz.ll).
+function weeklyUploads(dates: string[], n: number) {
+  const monday = new Date();
+  monday.setHours(0, 0, 0, 0);
+  monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+  const out = Array.from({ length: n }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(d.getDate() - (n - 1 - i) * 7);
+    return { start: d.getTime(), n: 0, label: d.toLocaleDateString("ro-RO", { day: "2-digit", month: "2-digit" }) };
+  });
+  for (const iso of dates) {
+    const t = new Date(iso).getTime();
+    for (let i = n - 1; i >= 0; i--) if (t >= out[i].start) { out[i].n++; break; }
+  }
+  return out;
+}
+
+function topCounts(items: string[], limit: number): [string, number][] {
+  const m = new Map<string, number>();
+  for (const x of items) m.set(x, (m.get(x) ?? 0) + 1);
+  return Array.from(m).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit);
+}
+
 const when = (d: string) => new Date(d).toLocaleString("ro-RO", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const nf = new Intl.NumberFormat("ro-RO");
 
@@ -35,16 +60,18 @@ async function Overview() {
   const { supabase, orgId, role } = await getOrg();
   const cutoff = new Date(Date.now() - STUCK_MINUTES * 60_000).toISOString();
 
-  const [all, recent, stuck] = await Promise.all([
-    supabase.from("candidates").select("status, parsing_status").eq("organization_id", orgId).limit(SCAN_LIMIT),
+  const [all, recent, stuck, skillRows] = await Promise.all([
+    supabase.from("candidates").select("status, parsing_status, created_at").eq("organization_id", orgId).limit(SCAN_LIMIT),
     supabase.from("candidates").select("id, name, file_name, status, parsing_status, created_at").eq("organization_id", orgId)
       .order("created_at", { ascending: false }).limit(6),
     supabase.from("candidates").select("id", { count: "exact", head: true }).eq("organization_id", orgId)
       .in("parsing_status", ["pending", "processing"]).lt("created_at", cutoff),
+    supabase.from("candidate_overview").select("skills").eq("organization_id", orgId).limit(SCAN_LIMIT),
   ]);
   if (all.error) throw all.error;
   if (recent.error) throw recent.error;
   if (stuck.error) throw stuck.error;
+  if (skillRows.error) throw skillRows.error;
 
   const rows = all.data ?? [];
   const byStatus = new Map<string, number>();
@@ -53,6 +80,8 @@ async function Overview() {
     byStatus.set(r.status, (byStatus.get(r.status) ?? 0) + 1);
     byParsing.set(r.parsing_status, (byParsing.get(r.parsing_status) ?? 0) + 1);
   }
+  const weeks = weeklyUploads(rows.map((r) => r.created_at), WEEKS);
+  const topSkills = topCounts((skillRows.data ?? []).flatMap((r) => (r.skills as string[]) ?? []), 8);
   const total = rows.length;
   const processing = (byParsing.get("pending") ?? 0) + (byParsing.get("processing") ?? 0);
   const review = byParsing.get("needs_review") ?? 0;
@@ -136,6 +165,43 @@ async function Overview() {
                 </li>
               ))}
             </ul>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader><CardTitle className="text-heading">Încărcări pe săptămână</CardTitle></CardHeader>
+          <CardContent>
+            <div className="flex h-32 items-end gap-2" role="img" aria-label={`Încărcări pe ultimele ${WEEKS} săptămâni: ${weeks.map((w) => w.n).join(", ")}`}>
+              {weeks.map((w) => (
+                <div key={w.label} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
+                  <span className="tabular text-caption text-muted-foreground">{w.n || ""}</span>
+                  <div className="w-full rounded-t bg-brand" style={{ height: `${(w.n / Math.max(...weeks.map((x) => x.n), 1)) * 100}%`, minHeight: w.n ? 4 : 0 }} />
+                  <span className="tabular text-caption text-muted-foreground">{w.label}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-heading">Competențe frecvente</CardTitle></CardHeader>
+          <CardContent>
+            {topSkills.length === 0 ? <p className="text-sm text-muted-foreground">Apar după ce sunt procesate CV-uri.</p> : (
+              <ul className="space-y-2">
+                {topSkills.map(([skill, n]) => (
+                  <li key={skill}>
+                    <div className="mb-1 flex items-baseline justify-between text-sm">
+                      <span className="truncate">{skill}</span><span className="tabular font-medium">{nf.format(n)}</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-muted" role="presentation">
+                      <div className="h-full rounded-full bg-brand" style={{ width: `${(n / topSkills[0][1]) * 100}%` }} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
       </div>

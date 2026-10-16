@@ -11,7 +11,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import httpx
 
+import embeddings
 import main
+from fastapi.testclient import TestClient
 from extract import parse_month, to_rows
 from reliability import (PermanentError, backoff_delay, check_cv, is_transient, iso, plan_claim, retry_async,
                          user_message)
@@ -210,6 +212,40 @@ def test_edited_experiences_not_duplicated():
     rows = [{"company_name": "acme srl", "role_title": "dev", "start_date": "2020-03"},
             {"company_name": "Beta", "role_title": "Dev", "start_date": "2021-01"}]
     assert main.drop_matching(rows, kept) == rows[1:]
+
+
+def test_candidate_text():
+    profile = {"summary": "Dev backend.", "skills": ["Python", "Docker"]}
+    exps = [{"role_title": "Backend Developer", "description": "API-uri"}, {"role_title": "Intern", "description": ""}]
+    t = embeddings.candidate_text(profile, exps, "Maria   Pop\nCluj")
+    assert t == "Dev backend.\nPython, Docker\nBackend Developer - API-uri\nIntern\nMaria Pop Cluj"
+    assert embeddings.candidate_text(None, [], "") == ""
+    assert len(embeddings.candidate_text(profile, exps, "x" * 9000)) == embeddings.MAX_CHARS
+
+
+def test_l2_normalize():
+    v = embeddings.l2_normalize([3.0, 4.0])
+    assert v == [0.6, 0.8] and abs(sum(x * x for x in v) - 1) < 1e-9
+    assert embeddings.l2_normalize([0.0, 0.0]) == [0.0, 0.0]  # vector nul: fără împărțire la 0
+
+
+def test_embed_endpoint(monkeypatch=None):
+    class Fake:  # modelul mock: nu se descarcă nimic
+        def embed(self, texts, batch_size=8):
+            return [[2.0] + [0.0] * (embeddings.DIM - 1) for _ in texts]
+    old, embeddings._model = embeddings._model, Fake()
+    try:
+        c, auth = TestClient(main.app), {"Authorization": "Bearer t"}
+        ok = c.post("/embed", json={"texts": ["a", "b"], "kind": "query"}, headers=auth)
+        assert ok.status_code == 200 and len(ok.json()["embeddings"]) == 2
+        assert len(ok.json()["embeddings"][0]) == 384 and ok.json()["embeddings"][0][0] == 1.0  # normalizat
+        assert c.post("/embed", json={"texts": ["a"], "kind": "query"}).status_code == 401
+        assert c.post("/embed", json={"texts": ["a"], "kind": "query"}, headers={"Authorization": "Bearer x"}).status_code == 401
+        for bad in ({"texts": [], "kind": "query"}, {"texts": ["a"] * 21, "kind": "query"},
+                    {"texts": ["a"], "kind": "altceva"}, {"texts": ["a" * 20001], "kind": "passage"}, {"kind": "query"}):
+            assert c.post("/embed", json=bad, headers=auth).status_code == 422, bad
+    finally:
+        embeddings._model = old
 
 
 if __name__ == "__main__":

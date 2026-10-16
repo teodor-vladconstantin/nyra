@@ -14,14 +14,16 @@ import os
 import shutil
 import tempfile
 import uuid
+from typing import Literal
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import httpx
 from fastapi import FastAPI, Header, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+import embeddings
 from extract import DATA_SCHEMA, SYSTEM_PROMPT, to_rows
 from reliability import PermanentError, check_cv, is_transient, iso, plan_claim, retry_async, user_message
 
@@ -104,6 +106,56 @@ async def sweep(authorization: str = Header("")):
     """Pentru cron extern (în plus față de sweeper-ul intern, util când instanța scalează la zero)."""
     check_token(authorization)
     return await sweep_once()
+
+
+class EmbedRequest(BaseModel):
+    texts: list[str] = Field(min_length=1, max_length=20)
+    kind: Literal["query", "passage"]  # modelul ales nu folosește prefixe; câmpul rămâne pentru compatibilitate (ex. e5)
+
+
+@app.post("/embed")
+async def embed(req: EmbedRequest, authorization: str = Header("")):
+    check_token(authorization)
+    if any(len(t) > 20000 for t in req.texts):
+        raise HTTPException(422, "text prea lung")
+    vecs = await asyncio.get_running_loop().run_in_executor(embeddings.EXECUTOR, embeddings.embed_texts, req.texts)
+    return {"embeddings": vecs}
+
+
+BACKFILL_BATCH = 20
+
+
+@app.post("/backfill-embeddings")
+async def backfill_embeddings(authorization: str = Header("")):
+    """Un lot de BACKFILL_BATCH candidați parsați fără embedding; se apelează repetat până remaining = 0."""
+    check_token(authorization)
+    loop = asyncio.get_running_loop()
+    base = {"parsing_status": "in.(parsed,needs_review)", "embedding": "is.null"}
+    done = 0
+    async with httpx.AsyncClient(timeout=TIMEOUT) as http:
+        r = await http.get(f"{SUPABASE_URL}/rest/v1/candidates", headers=SB_HEADERS, params={
+            **base, "select": "id,organization_id,parsed_text,extracted_keywords",
+            "order": "created_at.asc", "limit": str(BACKFILL_BATCH)})
+        r.raise_for_status()
+        for c in r.json():
+            try:
+                e = await http.get(f"{SUPABASE_URL}/rest/v1/candidate_experiences", headers=SB_HEADERS, params={
+                    "candidate_id": f"eq.{c['id']}", "organization_id": f"eq.{c['organization_id']}",
+                    "select": "role_title,description", "order": "position.asc"})
+                e.raise_for_status()
+                text_ = embeddings.candidate_text(c.get("extracted_keywords"), e.json(), c.get("parsed_text") or "")
+                if not text_:
+                    continue
+                [vec] = await loop.run_in_executor(embeddings.EXECUTOR, embeddings.embed_texts, [text_])
+                await patch(http, "candidates", c["id"], c["organization_id"], {"embedding": vec})
+                done += 1
+            except Exception:
+                log.exception("backfill embedding failed candidate=%s", c["id"])
+        # count exact prin Content-Range; candidații fără text rămân în număr (nu au ce embedda)
+        cnt = await http.get(f"{SUPABASE_URL}/rest/v1/candidates", headers={**SB_HEADERS, "Prefer": "count=exact"},
+                             params={**base, "select": "id", "limit": "1"})
+        cnt.raise_for_status()
+    return {"processed": done, "remaining": int(cnt.headers.get("content-range", "*/0").rsplit("/", 1)[-1])}
 
 
 def fields(**kv) -> str:
@@ -228,6 +280,13 @@ async def _process(http: httpx.AsyncClient, org_id: str, cand_id: str, cv_url: s
         "parse_error": None,
     })
     log.info("parsed %s", fields(org=org_id, candidate=cand_id, status=status, experiences=len(rows_)))
+    try:  # embedding-ul nu trebuie să strice parsarea
+        text_ = embeddings.candidate_text(profile, rows_, text)
+        if text_:
+            [vec] = await asyncio.get_running_loop().run_in_executor(embeddings.EXECUTOR, embeddings.embed_texts, [text_])
+            await patch(http, "candidates", cand_id, org_id, {"embedding": vec})
+    except Exception:
+        log.exception("embedding failed %s", fields(org=org_id, candidate=cand_id))
 
 
 async def extract(http: httpx.AsyncClient, filename: str, content: bytes) -> dict | None:

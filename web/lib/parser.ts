@@ -21,3 +21,24 @@ export async function triggerParse(organizationId: string, candidateId: string):
   }
   return false;
 }
+
+// Embeddings (384 dim., normalizați) calculate local în serviciul de parsing. Întoarce null dacă serviciul nu răspunde:
+// matching-ul semantic e un bonus, deci apelantul continuă fără el.
+export async function embedTexts(texts: string[], kind: "query" | "passage"): Promise<number[][] | null> {
+  const url = process.env.PARSER_URL;
+  if (!url || texts.length === 0) return null;
+  try {
+    const res = await fetch(`${url}/embed`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.PARSER_TOKEN}` },
+      body: JSON.stringify({ texts, kind }),
+      signal: AbortSignal.timeout(20000), // prima cerere după pornire încarcă modelul
+    });
+    if (!res.ok) return null;
+    const { embeddings } = (await res.json()) as { embeddings: number[][] };
+    return embeddings?.every((e) => e.length === 384) ? embeddings : null;
+  } catch (e) {
+    console.error("embed failed", e);
+    return null;
+  }
+}

@@ -7,6 +7,7 @@ import { SENIORITY_LABELS } from "@/lib/experience";
 import { hashFile } from "@/lib/duplicates";
 import { eraseCandidate } from "@/lib/audit";
 import { STATUS_LABELS, type Status } from "@/lib/candidates";
+import { RECOMMENDATION, readScore } from "@/lib/scorecards";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const MAX_RECENT_UPLOADS = 300; // plafon per organizație / 10 minute: oprește un script sau un dublu-click scăpat de sub control
@@ -106,4 +107,28 @@ export async function deleteCandidate(candidateId: string) {
   await eraseCandidate(supabase, candidateId);
   revalidatePath("/admin/candidati");
   redirect("/admin/candidati?toast=Candidatul+și+CV-ul+au+fost+șterse");
+}
+
+export async function addScorecard(candidateId: string, formData: FormData) {
+  const technical = readScore(formData.get("technical"));
+  const communication = readScore(formData.get("communication"));
+  const culture = readScore(formData.get("culture"));
+  const recommendation = String(formData.get("recommendation") ?? "");
+  const back = `/admin/candidati/${candidateId}?tab=evaluari`;
+  if (!technical || !communication || !culture || !(recommendation in RECOMMENDATION)) {
+    redirect(`${back}&toast=${encodeURIComponent("Completează toate notele și recomandarea")}&type=error`);
+  }
+  const comment = String(formData.get("comment") ?? "").trim().slice(0, 5000);
+  const { supabase, orgId } = await requireAdmin();
+  const { error } = await supabase.from("candidate_scorecards")
+    .insert({ organization_id: orgId, candidate_id: candidateId, technical, communication, culture, recommendation, comment });
+  if (error) throw error;
+  redirect(`${back}&toast=${encodeURIComponent("Evaluarea a fost salvată")}`);
+}
+
+export async function deleteScorecard(candidateId: string, id: string) {
+  const { supabase, orgId } = await requireAdmin();
+  const { error } = await supabase.from("candidate_scorecards").delete().eq("id", id).eq("organization_id", orgId);
+  if (error) throw error;
+  redirect(`/admin/candidati/${candidateId}?tab=evaluari&toast=${encodeURIComponent("Evaluarea a fost ștearsă")}`);
 }

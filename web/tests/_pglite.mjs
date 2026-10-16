@@ -1,7 +1,7 @@
 // Helper comun pentru testele de bază de date: pornește Postgres în WASM (PGlite), aplică toate migrările din
 // supabase/migrations în ordine și expune câteva scurtături. Fiecare tests/*.test.mjs îl importă.
 // Stub-uri pentru ce oferă Supabase: auth, storage, vault, pg_net, rolurile anon/authenticated/service_role.
-// NYRA_SCHEMA=bootstrap: în loc de cele 11 migrări se aplică doar init + supabase/bootstrap/after_init.sql.
+// NYRA_SCHEMA=bootstrap: în loc de cele 12 migrări se aplică doar init + supabase/bootstrap/after_init.sql.
 import { PGlite } from "@electric-sql/pglite";
 import { readFileSync, readdirSync } from "fs";
 

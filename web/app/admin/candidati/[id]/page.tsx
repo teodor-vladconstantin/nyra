@@ -13,7 +13,7 @@ import { getOrg } from "@/lib/org";
 import { EMPLOYMENT_LABELS, formatPeriod, type EmploymentType } from "@/lib/experience";
 import { STATUS_LABELS, type Status } from "@/lib/candidates";
 import { DUPLICATE_REASONS, duplicatesOf, type DuplicateKind } from "@/lib/duplicates";
-import { addNote, reparse } from "../actions";
+import { addNote, addScorecard, deleteScorecard, reparse } from "../actions";
 import { StatusSelect } from "../status-select";
 import { ContactDialog } from "./contact-dialog";
 import { DeleteButton } from "./delete-button";
@@ -22,6 +22,8 @@ import { TagEditor } from "@/components/candidates/tag-editor";
 import type { Tag } from "@/lib/candidates";
 import { MergeDialog } from "./merge-dialog";
 import { SenioritySelect } from "./seniority-select";
+import { Scorecards } from "@/components/candidates/scorecards";
+import type { Scorecard } from "@/lib/scorecards";
 
 type Extracted = { skills?: string[]; education?: string[]; summary?: string } | null;
 
@@ -32,7 +34,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 }
 
 export default async function CandidatePage({ params, searchParams }: { params: { id: string }; searchParams: { tab?: string } }) {
-  const { supabase, orgId, role } = await getOrg();
+  const { supabase, orgId, role, user } = await getOrg();
   const { data: c } = await supabase
     .from("candidates")
     .select("id, name, email, phone, location, file_name, cv_url, preview_path, parsed_text, extracted_keywords, parsing_status, status, created_at, edited_manually, parse_error")
@@ -42,7 +44,7 @@ export default async function CandidatePage({ params, searchParams }: { params: 
   if (!c) notFound();
 
   const previewPath = c.preview_path ?? (c.cv_url?.toLowerCase().endsWith(".pdf") ? c.cv_url : null);
-  const [{ data: experiences }, { data: notes }, preview, original, dupGroups, { data: overview }, { data: allTags }] = await Promise.all([
+  const [{ data: experiences }, { data: notes }, preview, original, dupGroups, { data: overview }, { data: allTags }, { data: cards }] = await Promise.all([
     supabase.from("candidate_experiences").select("*").eq("organization_id", orgId).eq("candidate_id", c.id).order("position"),
     supabase.from("candidate_notes").select("id, body, created_at").eq("organization_id", orgId).eq("candidate_id", c.id)
       .order("created_at", { ascending: false }),
@@ -51,6 +53,8 @@ export default async function CandidatePage({ params, searchParams }: { params: 
     duplicatesOf(supabase, c.id),
     supabase.from("candidate_overview").select("tags").eq("id", c.id).eq("organization_id", orgId).maybeSingle(),
     supabase.from("tags").select("id, name, color").eq("organization_id", orgId).order("name"),
+    supabase.from("candidate_scorecards").select("id, technical, communication, culture, recommendation, comment, author_id, created_at")
+      .eq("organization_id", orgId).eq("candidate_id", c.id).order("created_at", { ascending: false }),
   ]);
 
   // Alți candidați care se potrivesc (același fișier / email / telefon), cu motivele combinate.
@@ -67,7 +71,7 @@ export default async function CandidatePage({ params, searchParams }: { params: 
   const isAdmin = role === "admin";
   const title = c.name ?? c.file_name ?? "Candidat";
   const fmt = (d: string) => new Date(d).toLocaleString("ro-RO", { dateStyle: "medium", timeStyle: "short" });
-  const tab = ["experienta", "note", "text"].includes(searchParams.tab ?? "") ? searchParams.tab! : "experienta";
+  const tab = ["experienta", "note", "evaluari", "text"].includes(searchParams.tab ?? "") ? searchParams.tab! : "experienta";
 
   return (
     <>
@@ -161,6 +165,7 @@ export default async function CandidatePage({ params, searchParams }: { params: 
             <TabsList className="mb-4">
               <TabsTrigger value="experienta">Experiență ({experiences?.length ?? 0})</TabsTrigger>
               <TabsTrigger value="note">Note ({notes?.length ?? 0})</TabsTrigger>
+              <TabsTrigger value="evaluari">Evaluări ({cards?.length ?? 0})</TabsTrigger>
               <TabsTrigger value="text">Text CV</TabsTrigger>
             </TabsList>
 
@@ -244,6 +249,13 @@ export default async function CandidatePage({ params, searchParams }: { params: 
                   ))}
                 </ul>
               )}
+            </TabsContent>
+
+            <TabsContent value="evaluari">
+              <Scorecards
+                cards={(cards ?? []) as Scorecard[]} canEdit={isAdmin} me={user.id}
+                add={addScorecard.bind(null, c.id)} remove={deleteScorecard.bind(null, c.id)}
+              />
             </TabsContent>
 
             <TabsContent value="text">

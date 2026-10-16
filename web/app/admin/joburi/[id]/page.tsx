@@ -7,8 +7,8 @@ import { StatusBadge } from "@/components/badges";
 import { SubmitButton } from "@/components/submit-button";
 import { getOrg } from "@/lib/org";
 import { SENIORITY_LABELS } from "@/lib/experience";
-import { JOB_STATUS, type Job, type JobMatch } from "@/lib/jobs";
-import { deleteJob, setJobStatus, toggleCandidate, updateJob } from "../actions";
+import { JOB_STATUS, type Job, type JobMatch, type JobSemantic } from "@/lib/jobs";
+import { deleteJob, embedJob, setJobStatus, toggleCandidate, updateJob } from "../actions";
 import { JobForm } from "../job-form";
 
 export const metadata = { title: "Job" };
@@ -18,14 +18,22 @@ export default async function JobPage({ params }: { params: { id: string } }) {
   if (!UUID.test(params.id)) notFound();
   const { supabase, orgId, role } = await getOrg();
   const isAdmin = role === "admin";
-  const [{ data: job, error }, { data: matches, error: mErr }] = await Promise.all([
-    supabase.from("jobs").select("*").eq("id", params.id).eq("organization_id", orgId).maybeSingle(),
-    supabase.rpc("job_matches", { p_job: params.id, p_limit: 100 }),
+  // Coloane explicite: embedding-ul (384 numere) nu trebuie să ajungă în componentele client.
+  const [{ data: job, error }, { data: matches, error: mErr }, { data: semantic, error: sErr }, { data: embedded }] = await Promise.all([
+    supabase.from("jobs").select("id, title, description, requirements, location, contract_type, keywords, status, created_at")
+      .eq("id", params.id).eq("organization_id", orgId).maybeSingle(),
+    supabase.rpc("job_matches", { p_job: params.id, p_limit: 500 }),
+    supabase.rpc("job_semantic_matches", { p_job: params.id, p_limit: 500 }),
+    supabase.from("jobs").select("id").eq("id", params.id).eq("organization_id", orgId).not("embedding", "is", null).maybeSingle(),
   ]);
-  if (error || mErr) throw error ?? mErr;
+  if (error || mErr || sErr) throw error ?? mErr ?? sErr;
   if (!job) notFound();
   const j = job as Job;
-  const rows = (matches ?? []) as JobMatch[];
+  const sim = new Map(((semantic ?? []) as JobSemantic[]).map((s) => [s.candidate_id, s.similarity]));
+  // Atașații primii, apoi cei mai apropiați semantic (dacă există), apoi după cuvintele cheie.
+  const rows = ((matches ?? []) as JobMatch[])
+    .sort((a, b) => Number(b.attached) - Number(a.attached) || (sim.get(b.candidate_id) ?? -1) - (sim.get(a.candidate_id) ?? -1) || b.matched - a.matched)
+    .slice(0, 100);
   const attached = rows.filter((r) => r.attached).length;
 
   return (
@@ -73,6 +81,12 @@ export default async function JobPage({ params }: { params: { id: string } }) {
       <h2 className="mb-3 text-sm font-medium">
         Candidați potriviți <span className="text-muted-foreground">· {attached} atașați</span>
       </h2>
+      {!embedded && isAdmin && (
+        <form action={embedJob.bind(null, j.id)} className="mb-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+          Potrivirea semantică nu e calculată pentru acest job.
+          <SubmitButton size="sm" variant="outline" pendingText="Se calculează…">Calculează</SubmitButton>
+        </form>
+      )}
       {rows.length === 0 ? (
         <EmptyState title="Niciun candidat încă">Încarcă CV-uri la Candidați; apar aici clasate după potrivire.</EmptyState>
       ) : (
@@ -81,7 +95,7 @@ export default async function JobPage({ params }: { params: { id: string } }) {
             <TableHeader>
               <TableRow>
                 <TableHead>Candidat</TableHead><TableHead>Rol curent</TableHead><TableHead>Experiență</TableHead>
-                <TableHead>Status</TableHead><TableHead>Potrivire</TableHead>{isAdmin && <TableHead className="w-0" />}
+                <TableHead>Status</TableHead><TableHead>Cuvinte cheie</TableHead><TableHead>Semantic</TableHead>{isAdmin && <TableHead className="w-0" />}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -98,6 +112,7 @@ export default async function JobPage({ params }: { params: { id: string } }) {
                   <TableCell className="tabular-nums">
                     {r.total ? `${Math.round((r.matched / r.total) * 100)}% (${r.matched}/${r.total})` : "—"}
                   </TableCell>
+                  <TableCell className="tabular-nums">{sim.has(r.candidate_id) ? `${Math.round(sim.get(r.candidate_id)! * 100)}%` : "—"}</TableCell>
                   {isAdmin && (
                     <TableCell>
                       <form action={toggleCandidate.bind(null, j.id, r.candidate_id, r.attached)}>

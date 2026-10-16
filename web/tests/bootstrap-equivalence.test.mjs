@@ -1,4 +1,4 @@
-// supabase/bootstrap/after_init.sql (aplicat peste init) trebuie să dea același catalog ca cele 11 migrări.
+// supabase/bootstrap/after_init.sql (aplicat peste init) trebuie să dea același catalog ca cele 12 migrări.
 // Se compară: tabele/coloane, constrângeri, indexuri, vederi, funcții (cod + proprietăți), triggere, politici
 // (public + storage.objects), enum-uri, drepturi, RLS, extensii, bucket-uri și rândul seed din organizations.
 // Singura diferență intenționată: bucket-ul `logos` (rămas din migrarea 3, mort după resume_parser).
