@@ -6,10 +6,13 @@ import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { applyToJob } from "@/lib/apply";
+import { cleanSource } from "@/lib/apply-source";
+import { jobPostingJsonLd, toScriptJson } from "@/lib/job-posting";
 import { createClient } from "@/lib/supabase";
 
 const UUID = /^[0-9a-f-]{36}$/i;
-type PublicJob = { title: string; description: string; requirements: string; location: string; contract_type: string; company: string };
+type PublicJob = { title: string; description: string; requirements: string; location: string; contract_type: string; company: string; posted_at: string };
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nyra.joben.eu";
 
 async function loadJob(id: string) {
   if (!UUID.test(id)) notFound();
@@ -25,12 +28,16 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   return { title: `${job.title} · ${job.company}`, description: `Aplică la ${job.title}, ${job.company}.` };
 }
 
-export default async function ApplyPage({ params, searchParams }: { params: { id: string }; searchParams: { sent?: string } }) {
+export default async function ApplyPage({ params, searchParams }: { params: { id: string }; searchParams: { sent?: string; src?: string } }) {
   const job = await loadJob(params.id);
   const meta = [job.company, job.location, job.contract_type].filter(Boolean).join(" · ");
 
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: toScriptJson(jobPostingJsonLd({ id: params.id, ...job }, `${SITE}/aplica/${params.id}`)) }}
+      />
       <header className="border-b border-border/60"><div className="mx-auto flex h-16 max-w-3xl items-center px-4"><Brand href="/" /></div></header>
       <main className="mx-auto max-w-3xl space-y-8 px-4 py-10">
         <div>
@@ -62,6 +69,7 @@ export default async function ApplyPage({ params, searchParams }: { params: { id
           <form action={applyToJob} className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-card sm:p-8">
             <h2 className="text-lg font-semibold">Aplică</h2>
             <input type="hidden" name="job" value={params.id} />
+            <input type="hidden" name="src" value={cleanSource(searchParams.src) ?? ""} />
             {/* Honeypot: ascuns pentru oameni și cititoare de ecran. */}
             <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
               <label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label>

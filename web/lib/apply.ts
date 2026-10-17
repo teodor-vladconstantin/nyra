@@ -1,5 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
+import { cleanSource } from "@/lib/apply-source";
 import { checkCv } from "@/lib/cv-file";
 import { hashFile } from "@/lib/duplicates";
 import { triggerParse } from "@/lib/parser";
@@ -15,8 +16,9 @@ export async function applyToJob(formData: FormData) {
   const jobId = String(formData.get("job") ?? "");
   if (!UUID.test(jobId)) redirect("/");
   const back = `/aplica/${jobId}`;
+  const src = cleanSource(formData.get("src"));
   const done = (type: "success" | "error", msg: string, extra = "") =>
-    redirect(`${back}?${extra}toast=${encodeURIComponent(msg)}&type=${type}`);
+    redirect(`${back}?${extra}${type === "error" && src ? `src=${src}&` : ""}toast=${encodeURIComponent(msg)}&type=${type}`);
 
   // Honeypot: boții completează câmpul ascuns; le răspundem ca la succes, fără să salvăm nimic.
   if (String(formData.get("website") ?? "")) return done("success", "Aplicația a fost trimisă.", "sent=1&");
@@ -57,7 +59,7 @@ export async function applyToJob(formData: FormData) {
   }
   const { data: cand, error } = await supabase.from("candidates").insert({
     organization_id: orgId, name, email, phone: phone || null, file_name: file.name.slice(0, 255), cv_url: path,
-    content_hash: await hashFile(file), source: "apply", consent_at: new Date().toISOString(),
+    content_hash: await hashFile(file), source: "apply", apply_source: src, consent_at: new Date().toISOString(),
   }).select("id").single();
   if (error) {
     await supabase.storage.from("cvs").remove([path]);

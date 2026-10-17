@@ -19,12 +19,13 @@ export default async function JobPage({ params }: { params: { id: string } }) {
   const { supabase, orgId, role } = await getOrg();
   const isAdmin = role === "admin";
   // Coloane explicite: embedding-ul (384 numere) nu trebuie să ajungă în componentele client.
-  const [{ data: job, error }, { data: matches, error: mErr }, { data: semantic, error: sErr }, { data: embedded }] = await Promise.all([
+  const [{ data: job, error }, { data: matches, error: mErr }, { data: semantic, error: sErr }, { data: embedded }, { data: sources }] = await Promise.all([
     supabase.from("jobs").select("id, title, description, requirements, location, contract_type, keywords, status, public_apply, created_at")
       .eq("id", params.id).eq("organization_id", orgId).maybeSingle(),
     supabase.rpc("job_matches", { p_job: params.id, p_limit: 500 }),
     supabase.rpc("job_semantic_matches", { p_job: params.id, p_limit: 500 }),
     supabase.from("jobs").select("id").eq("id", params.id).eq("organization_id", orgId).not("embedding", "is", null).maybeSingle(),
+    supabase.rpc("job_apply_sources", { p_job: params.id }),
   ]);
   if (error || mErr || sErr) throw error ?? mErr ?? sErr;
   if (!job) notFound();
@@ -65,6 +66,16 @@ export default async function JobPage({ params }: { params: { id: string } }) {
           Pagina publică de aplicare:{" "}
           <Link href={`/aplica/${j.id}`} target="_blank" className="break-all text-brand underline-offset-4 hover:underline">/aplica/{j.id}</Link>
           {j.status === "closed" && <span className="text-muted-foreground"> (jobul e închis, deci pagina nu mai primește aplicații)</span>}
+          <span className="mt-2 block text-xs text-muted-foreground">
+            Ca să afli de unde vin aplicările, pune la sfârșitul linkului sursa: <code>?src=linkedin</code>, <code>?src=ejobs</code>, <code>?src=facebook</code>
+            (litere mici, cifre, - sau _).
+          </span>
+          {((sources ?? []) as { source: string; applications: number }[]).length > 0 && (
+            <span className="mt-2 block text-xs">
+              Aplicări pe sursă:{" "}
+              {((sources ?? []) as { source: string; applications: number }[]).map((s) => `${s.source} ${s.applications}`).join(" · ")}
+            </span>
+          )}
         </p>
       )}
 
