@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PageHero } from "@/components/marketing/cta";
 import { LeadForm } from "@/components/marketing/lead-form";
 import { wrap } from "@/components/marketing/section";
@@ -22,7 +23,7 @@ export default function Contact() {
           </div>
           <div>
             <h2 className="text-heading text-foreground">Ai deja cont?</h2>
-            <p className="mt-2"><a className="text-brand underline-offset-4 hover:underline" href="/login">Intră în aplicație</a>.</p>
+            <p className="mt-2"><Link className="text-brand underline-offset-4 hover:underline" href="/sign-in">Intră în aplicație</Link>.</p>
           </div>
         </aside>
       </div>

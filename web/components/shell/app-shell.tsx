@@ -10,12 +10,11 @@ type Props = {
   orgName?: string;
   email: string;
   role: "admin" | "viewer";
-  logout: () => Promise<void>;
   children: React.ReactNode;
 };
 
 // Sidebar fix de la lg în sus, sertar pe mobil. „Sari la conținut" e primul element focalizabil.
-export function AppShell({ orgId, orgName, email, role, logout, children }: Props) {
+export function AppShell({ orgId, orgName, email, role, children }: Props) {
   return (
     <div className="min-h-screen">
       <a
@@ -39,7 +38,7 @@ export function AppShell({ orgId, orgName, email, role, logout, children }: Prop
           <SearchTrigger />
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
-            <UserMenu email={email} role={role} logout={logout} />
+            <UserMenu email={email} role={role} />
           </div>
         </header>
         <main id="continut" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-6 outline-none md:px-8 md:py-8">

@@ -1,39 +1,20 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
-import { safeNext } from "@/components/shell/safe-next";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request });
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll: (toSet) => {
-          toSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          toSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-        },
-      },
-    },
-  );
+const isProtected = createRouteMatcher(["/admin(.*)", "/onboarding(.*)"]);
 
-  const { data: { user } } = await supabase.auth.getUser();
-  const { pathname, search } = request.nextUrl;
+// Aplicația cere sesiune Clerk; site-ul public rămâne deschis. Neautentificații ajung la /sign-in cu redirect_url înapoi.
+export default clerkMiddleware(
+  async (auth, req) => {
+    if (isProtected(req)) await auth.protect();
+  },
+  // Fără asta, protect() trimite la pagina Clerk găzduită (accounts.dev), nu la /sign-in din aplicație.
+  { signInUrl: "/sign-in", signUpUrl: "/sign-up" },
+);
 
-  if (!user && pathname.startsWith("/admin")) {
-    // Păstrăm destinația ca după login să revină aici; safeNext o validează și la citire (login/page.tsx).
-    const url = new URL("/login", request.url);
-    const next = safeNext(pathname + search);
-    if (next !== "/admin") url.searchParams.set("next", next);
-    return NextResponse.redirect(url);
-  }
-  // Deja autentificat: /login nu are rost.
-  if (user && pathname === "/login") {
-    return NextResponse.redirect(new URL(safeNext(request.nextUrl.searchParams.get("next")), request.url));
-  }
-  return response;
-}
-
-export const config = { matcher: ["/admin/:path*", "/login"] };
+export const config = {
+  matcher: [
+    // Tot, în afară de fișierele statice și internele Next
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+  ],
+};

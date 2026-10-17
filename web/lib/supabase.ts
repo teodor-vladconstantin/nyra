@@ -1,22 +1,12 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { auth } from "@clerk/nextjs/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
+// Client Supabase cu token-ul Clerk (Third-Party Auth): RLS vede utilizatorul din `sub`/`email`.
+// Fără sesiune, getToken() întoarce null și supabase-js folosește cheia anon (formularele publice, ex. `leads`).
 export function createClient() {
-  const cookieStore = cookies();
-  return createServerClient(
+  return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: (toSet) => {
-          try {
-            toSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
-          } catch {
-            // Apelat din Server Component: middleware-ul reîmprospătează sesiunea.
-          }
-        },
-      },
-    },
+    { accessToken: async () => (await auth()).getToken() },
   );
 }

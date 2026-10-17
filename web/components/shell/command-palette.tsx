@@ -5,7 +5,7 @@ import { CornerDownLeft, FileText, Loader2, Search } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav-items";
-import { browserClient } from "./supabase-browser";
+import { useBrowserClient } from "./supabase-browser";
 
 type Hit = { id: string; name: string | null; file_name: string | null };
 type Option = { key: string; href: string; label: string; hint?: string; icon: React.ComponentType<{ className?: string }> };
@@ -14,6 +14,7 @@ type Option = { key: string; href: string; label: string; hint?: string; icon: R
 const clean = (s: string) => s.replace(/[%_\\,()*"':]/g, " ").replace(/\s+/g, " ").trim();
 
 export function CommandPalette({ orgId, open, onOpenChange }: { orgId: string; open: boolean; onOpenChange: (o: boolean) => void }) {
+  const supabase = useBrowserClient();
   const router = useRouter();
   const uid = useId();
   const [query, setQuery] = useState("");
@@ -35,7 +36,7 @@ export function CommandPalette({ orgId, open, onOpenChange }: { orgId: string; o
     if (q.length < 2) { setHits([]); setLoading(false); setFailed(false); return; }
     setLoading(true);
     const t = setTimeout(async () => {
-      const { data, error } = await browserClient()
+      const { data, error } = await supabase
         .from("candidates")
         .select("id, name, file_name")
         .eq("organization_id", orgId)
@@ -49,7 +50,7 @@ export function CommandPalette({ orgId, open, onOpenChange }: { orgId: string; o
       setActive(0);
     }, 220);
     return () => clearTimeout(t);
-  }, [query, orgId]);
+  }, [query, orgId, supabase]);
 
   const q = clean(query);
   const needle = q.toLowerCase();

@@ -10,6 +10,11 @@ const BASE = `
   create table auth.users (id uuid primary key, email text);
   create function auth.uid() returns uuid language sql stable as
     $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
+  -- auth.jwt() ca în Supabase (claims-urile token-ului); aici din setările request.jwt.claim.* puse de as().
+  create function auth.jwt() returns jsonb language sql stable as
+    $$ select jsonb_strip_nulls(jsonb_build_object(
+         'sub', nullif(current_setting('request.jwt.claim.sub', true), ''),
+         'email', nullif(current_setting('request.jwt.claim.email', true), ''))) $$;
   create role anon; create role authenticated; create role service_role bypassrls;
 
   create schema storage;
@@ -65,9 +70,9 @@ export const A = "00000000-0000-0000-0000-00000000000a";
 export const B = "00000000-0000-0000-0000-00000000000b";
 export const one = async (q, p) => (await db.query(q, p)).rows[0];
 export const count = async (q, p) => (await one(`select count(*)::int n from (${q}) x`, p)).n;
-// Rulează următoarele query-uri ca rolul dat, cu userul `uid` (auth.uid()).
-export const as = async (role, uid = "") => {
+// Rulează următoarele query-uri ca rolul dat, cu userul `uid` (claim `sub`) și emailul din token.
+export const as = async (role, uid = "", email = "") => {
   await db.exec(`reset role; set role ${role}`);
-  await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [uid]);
+  await db.query(`select set_config('request.jwt.claim.sub', $1, false), set_config('request.jwt.claim.email', $2, false)`, [uid, email]);
 };
 export const su = () => db.exec("reset role");
