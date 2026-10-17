@@ -9,6 +9,7 @@ import { SavedFilters } from "@/components/candidates/saved-filters";
 import { ViewToggle } from "@/components/candidates/view-toggle";
 import { getOrg } from "@/lib/org";
 import { candidatesQuery, cleanParams, isFiltered, loadFilterContext, type CandidateRow, type Filters } from "@/lib/candidates";
+import { ImportCsv } from "./import-csv";
 import { Upload } from "./upload";
 
 export const metadata = { title: "Candidați" };
@@ -50,6 +51,7 @@ export default async function CandidatesPage({ searchParams: sp }: { searchParam
       />
 
       {role === "admin" && <Upload />}
+      {role === "admin" && <ImportCsv />}
 
       <SavedFilters basePath="/admin/candidati" current={current} items={ctx.saved} />
       <FilterForm sp={sp} basePath="/admin/candidati" roleOptions={ctx.roleOptions} tags={ctx.tags} filtered={filtered} />
