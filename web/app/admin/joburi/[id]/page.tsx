@@ -79,7 +79,7 @@ export default async function JobPage({ params }: { params: { id: string } }) {
       )}
 
       <h2 className="mb-3 text-sm font-medium">
-        Candidați potriviți <span className="text-muted-foreground">· {attached} atașați</span>
+        Candidați potriviți <span className="text-muted-foreground">· {attached === 1 ? "1 atașat" : `${attached} atașați`}</span>
       </h2>
       {!embedded && isAdmin && (
         <form action={embedJob.bind(null, j.id)} className="mb-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">

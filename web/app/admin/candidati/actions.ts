@@ -85,7 +85,7 @@ export async function addNote(candidateId: string, formData: FormData) {
   const { supabase, orgId } = await requireAdmin();
   const { error } = await supabase.from("candidate_notes").insert({ organization_id: orgId, candidate_id: candidateId, body });
   if (error) throw error;
-  redirect(`/admin/candidati/${candidateId}?tab=note&toast=Nota+a+fost+adăugată`);
+  redirect(`/admin/candidati/${candidateId}?tab=note&toast=${encodeURIComponent("Nota a fost adăugată")}`);
 }
 
 export async function reparse(candidateId: string) {
@@ -106,7 +106,7 @@ export async function deleteCandidate(candidateId: string) {
   // erase_candidate șterge rândurile (cu rând 'erase' în jurnal) și întoarce fișierele din bucket.
   await eraseCandidate(supabase, candidateId);
   revalidatePath("/admin/candidati");
-  redirect("/admin/candidati?toast=Candidatul+și+CV-ul+au+fost+șterse");
+  redirect(`/admin/candidati?toast=${encodeURIComponent("Candidatul și CV-ul au fost șterse")}`);
 }
 
 export async function addScorecard(candidateId: string, formData: FormData) {
