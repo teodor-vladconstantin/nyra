@@ -1,9 +1,10 @@
 "use client";
+import { useClerk } from "@clerk/nextjs";
 import { LogOut } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-// `logout` e server action trimisă din layout.
-export function UserMenu({ email, role, logout }: { email: string; role: "admin" | "viewer"; logout: () => Promise<void> }) {
+export function UserMenu({ email, role }: { email: string; role: "admin" | "viewer" }) {
+  const { signOut } = useClerk();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -18,13 +19,9 @@ export function UserMenu({ email, role, logout }: { email: string; role: "admin"
           <span className="block text-caption text-muted-foreground">{role === "admin" ? "Administrator" : "Vizualizare"}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <form action={logout}>
-          <DropdownMenuItem asChild>
-            <button type="submit" className="w-full cursor-pointer">
-              <LogOut /> Ieșire
-            </button>
-          </DropdownMenuItem>
-        </form>
+        <DropdownMenuItem className="cursor-pointer" onSelect={() => signOut({ redirectUrl: "/" })}>
+          <LogOut /> Ieșire
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

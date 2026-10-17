@@ -1,9 +1,13 @@
 "use client";
-import { createBrowserClient } from "@supabase/ssr";
+import { useAuth } from "@clerk/nextjs";
+import { createClient } from "@supabase/supabase-js";
+import { useMemo } from "react";
 
-// Client pentru browser (aceleași cookie-uri de sesiune ca serverul). RLS rămâne granița reală de acces.
-let client: ReturnType<typeof createBrowserClient> | undefined;
-export function browserClient() {
-  client ??= createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
-  return client;
+// Client pentru browser cu token-ul Clerk al sesiunii curente. RLS rămâne granița reală de acces.
+export function useBrowserClient() {
+  const { getToken } = useAuth();
+  return useMemo(
+    () => createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { accessToken: () => getToken() }),
+    [getToken],
+  );
 }

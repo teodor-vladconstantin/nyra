@@ -24,13 +24,13 @@ export function Header() {
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
-          <Button asChild variant="ghost" className="hidden sm:inline-flex"><Link href="/login">Autentificare</Link></Button>
+          <Button asChild variant="ghost" className="hidden sm:inline-flex"><Link href="/sign-in">Autentificare</Link></Button>
           <Button asChild className="hidden sm:inline-flex"><Link href="/contact">Cere acces</Link></Button>
           {/* Meniu mobil fără JS: <details> */}
           <details className="group relative md:hidden">
             <summary className="grid size-9 cursor-pointer place-items-center rounded-md hover:bg-accent" aria-label="Meniu"><Menu className="size-5" /></summary>
             <div className="absolute right-0 top-11 w-56 rounded-lg border border-border bg-popover p-2 shadow-pop">
-              {[...NAV, { href: "/login", label: "Autentificare" }].map((n) => (
+              {[...NAV, { href: "/sign-in", label: "Autentificare" }].map((n) => (
                 <Link key={n.href} href={n.href} className="block rounded-md px-3 py-2 text-sm font-medium hover:bg-accent">{n.label}</Link>
               ))}
               <Button asChild className="mt-2 w-full"><Link href="/contact">Cere acces</Link></Button>

@@ -4,7 +4,7 @@ import { wrap } from "./section";
 
 const COLS = [
   { title: "Produs", links: [["Funcții", "/produs"], ["Prețuri", "/preturi"], ["Întrebări frecvente", "/faq"]] },
-  { title: "Companie", links: [["Despre", "/despre"], ["Contact", "/contact"], ["Autentificare", "/login"]] },
+  { title: "Companie", links: [["Despre", "/despre"], ["Contact", "/contact"], ["Autentificare", "/sign-in"]] },
   { title: "Legal", links: [["Confidențialitate", "/confidentialitate"], ["Termeni", "/termeni"]] },
 ] as const;
 
