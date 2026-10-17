@@ -26,4 +26,6 @@ export function jobEmbeddingText(j: { title: string; description: string; requir
   return [j.title, j.keywords.join(", "), j.description, j.requirements, j.location].filter(Boolean).join("\n");
 }
 
-export type JobSemantic = { candidate_id: string; similarity: number };
+export type JobMatchDetail = { candidate_id: string; matched: string[]; missing: string[] };
+
+export type JobSemantic ={ candidate_id: string; similarity: number };

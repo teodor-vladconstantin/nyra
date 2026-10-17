@@ -46,6 +46,14 @@ assert.deepEqual(rows, [
   { name: "Ana", matched: 2, total: 3, attached: false },
   { name: "Dan", matched: 1, total: 3, attached: false },
 ]);
+// ---- Explicabilitate: ce s-a potrivit și ce lipsește (aceeași regulă ca scorul); Eva (altă organizație) nu apare ----
+const detail = (await db.query(
+  "select c.name, d.matched, d.missing from job_match_detail($1, $2) d join candidates c on c.id = d.candidate_id order by 1", [job, [ana, dan, eva]],
+)).rows;
+assert.deepEqual(detail, [
+  { name: "Ana", matched: ["react", "SQL"], missing: ["Docker"] },
+  { name: "Dan", matched: ["SQL"], missing: ["react", "Docker"] },
+]);
 await db.query("insert into job_candidates (job_id, candidate_id, organization_id) values ($1,$2,$3)", [job, dan, org1]);
 rows = (await db.query("select name, attached from job_matches($1)", [job])).rows;
 assert.deepEqual(rows, [{ name: "Dan", attached: true }, { name: "Ana", attached: false }]);

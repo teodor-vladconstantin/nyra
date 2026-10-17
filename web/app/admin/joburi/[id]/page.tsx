@@ -7,7 +7,7 @@ import { StatusBadge } from "@/components/badges";
 import { SubmitButton } from "@/components/submit-button";
 import { getOrg } from "@/lib/org";
 import { SENIORITY_LABELS } from "@/lib/experience";
-import { JOB_STATUS, type Job, type JobMatch, type JobSemantic } from "@/lib/jobs";
+import { JOB_STATUS, type Job, type JobMatch, type JobMatchDetail, type JobSemantic } from "@/lib/jobs";
 import { deleteJob, embedJob, setJobStatus, toggleCandidate, updateJob } from "../actions";
 import { JobForm } from "../job-form";
 
@@ -35,6 +35,10 @@ export default async function JobPage({ params }: { params: { id: string } }) {
     .sort((a, b) => Number(b.attached) - Number(a.attached) || (sim.get(b.candidate_id) ?? -1) - (sim.get(a.candidate_id) ?? -1) || b.matched - a.matched)
     .slice(0, 100);
   const attached = rows.filter((r) => r.attached).length;
+  // Motivele scorului pentru rândurile afișate (cele 100 de mai sus), aceeași regulă ca job_matches.
+  const { data: detailRows, error: dErr } = await supabase.rpc("job_match_detail", { p_job: params.id, p_candidates: rows.map((r) => r.candidate_id) });
+  if (dErr) throw dErr;
+  const detail = new Map(((detailRows ?? []) as JobMatchDetail[]).map((d) => [d.candidate_id, d]));
 
   return (
     <>
@@ -95,6 +99,14 @@ export default async function JobPage({ params }: { params: { id: string } }) {
           <SubmitButton size="sm" variant="outline" pendingText="Se calculează…">Calculează</SubmitButton>
         </form>
       )}
+      <details className="mb-3 text-sm text-muted-foreground">
+        <summary className="cursor-pointer">Cum e calculat scorul</summary>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li><b>Cuvinte cheie:</b> câte dintre cuvintele cheie ale jobului apar în skills-urile extrase din CV. ✓ = găsit, ✗ = negăsit.</li>
+          <li><b>Semantic:</b> cât de apropiat e textul CV-ului de descrierea jobului, de la 0 la 100%.</li>
+          <li>Scorul ajută la ordonare, nu respinge pe nimeni: decizia o iei tu. Un ✗ poate însemna doar că skill-ul e formulat altfel în CV.</li>
+        </ul>
+      </details>
       {rows.length === 0 ? (
         <EmptyState title="Niciun candidat încă">Încarcă CV-uri la Candidați; apar aici clasate după potrivire.</EmptyState>
       ) : (
@@ -117,8 +129,18 @@ export default async function JobPage({ params }: { params: { id: string } }) {
                   </TableCell>
                   <TableCell className="tabular-nums text-muted-foreground">{Number(r.years_experience) ? `${r.years_experience} ani` : "—"}</TableCell>
                   <TableCell><StatusBadge status={r.status} /></TableCell>
-                  <TableCell className="tabular-nums">
-                    {r.total ? `${Math.round((r.matched / r.total) * 100)}% (${r.matched}/${r.total})` : "—"}
+                  <TableCell>
+                    <span className="tabular-nums">{r.total ? `${Math.round((r.matched / r.total) * 100)}% (${r.matched}/${r.total})` : "—"}</span>
+                    {detail.get(r.candidate_id) && (
+                      <div className="mt-1 flex max-w-xs flex-wrap gap-1">
+                        {detail.get(r.candidate_id)!.matched.map((k) => (
+                          <span key={k} className="rounded-full bg-primary/15 px-2 py-0.5 text-caption">✓ {k}</span>
+                        ))}
+                        {detail.get(r.candidate_id)!.missing.map((k) => (
+                          <span key={k} className="rounded-full bg-muted px-2 py-0.5 text-caption text-muted-foreground">✗ {k}</span>
+                        ))}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell className="tabular-nums">{sim.has(r.candidate_id) ? `${Math.round(sim.get(r.candidate_id)! * 100)}%` : "—"}</TableCell>
                   {isAdmin && (
