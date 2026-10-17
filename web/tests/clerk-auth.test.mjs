@@ -25,7 +25,7 @@ assert.equal((await one("select email from profiles where user_id = 'user_evil'"
 
 // Fără email în token: refuz clar
 await as("authenticated", "user_noemail", "");
-await assert.rejects(db.query("select sync_user()"), /lipsește/);
+await assert.rejects(db.query("select sync_user()"), /lipseste/);
 
 // ---- Preluarea contului vechi: același email (case-insensitive) din token ----
 await as("authenticated", "user_nyra", "nyra@joben.eu");
@@ -60,7 +60,7 @@ assert.equal(await count("select 1 from memberships where user_id = 'user_new' a
 assert.equal(await count("select 1 from candidates"), 0, "altă organizație nu vede candidații Compania");
 await db.query("insert into jobs (organization_id, title) values ($1,'J')", [newOrg]);
 await assert.rejects(db.query("insert into jobs (organization_id, title) values ($1,'X')", [org1]));
-await assert.rejects(db.query("select create_organization('')"), /1 și 120|deja/);
+await assert.rejects(db.query("select create_organization('')"), /1 si 120|deja/);
 // profil vizibil doar în aceeași organizație
 assert.equal(await count("select 1 from profiles where user_id = 'user_nyra'"), 0);
 assert.equal(await count("select 1 from profiles where user_id = 'user_new'"), 1);

@@ -888,7 +888,7 @@ declare
   legacy uuid;
 begin
   if uid is null or mail = '' then
-    raise exception 'Sesiune invalidă: lipsește utilizatorul sau emailul din token' using errcode = '28000';
+    raise exception 'Sesiune invalida: lipseste utilizatorul sau emailul din token' using errcode = '28000';
   end if;
   insert into profiles (user_id, email) values (uid, mail)
     on conflict (user_id) do update set email = excluded.email;
@@ -909,14 +909,14 @@ declare
   org uuid;
 begin
   if uid is null or mail = '' then
-    raise exception 'Sesiune invalidă: lipsește utilizatorul sau emailul din token' using errcode = '28000';
+    raise exception 'Sesiune invalida: lipseste utilizatorul sau emailul din token' using errcode = '28000';
   end if;
   if length(btrim(coalesce(p_name, ''))) not between 1 and 120 then
-    raise exception 'Numele organizației trebuie să aibă între 1 și 120 de caractere' using errcode = '22023';
+    raise exception 'Numele organizatiei trebuie sa aiba intre 1 si 120 de caractere' using errcode = '22023';
   end if;
   perform pg_advisory_xact_lock(hashtext(uid));
   if exists (select 1 from memberships where user_id = uid) then
-    raise exception 'Utilizatorul are deja o organizație' using errcode = '23505';
+    raise exception 'Utilizatorul are deja o organizatie' using errcode = '23505';
   end if;
   insert into profiles (user_id, email) values (uid, mail)
     on conflict (user_id) do update set email = excluded.email;
