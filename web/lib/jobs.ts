@@ -3,7 +3,7 @@ export type JobStatus = keyof typeof JOB_STATUS;
 
 export type Job = {
   id: string; title: string; description: string; requirements: string; location: string; contract_type: string;
-  keywords: string[]; status: JobStatus; created_at: string;
+  keywords: string[]; status: JobStatus; public_apply: boolean; created_at: string;
 };
 
 export type JobMatch = {

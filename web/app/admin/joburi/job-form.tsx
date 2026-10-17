@@ -33,6 +33,13 @@ export function JobForm({ action, job, submit }: { action: (f: FormData) => void
         <Label htmlFor="requirements">Cerințe</Label>
         <Textarea id="requirements" name="requirements" rows={5} maxLength={20000} defaultValue={job?.requirements} />
       </div>
+      <label className="flex items-start gap-2 text-sm sm:col-span-2">
+        <input type="checkbox" name="public_apply" defaultChecked={job?.public_apply} className="mt-0.5 size-4 accent-primary" />
+        <span>
+          Primește aplicații pe o pagină publică
+          <span className="block text-xs text-muted-foreground">Oricine are linkul poate vedea jobul și își poate trimite CV-ul. Linkul apare pe pagina jobului după salvare.</span>
+        </span>
+      </label>
       <div className="sm:col-span-2"><SubmitButton pendingText="Se salvează…">{submit}</SubmitButton></div>
     </form>
   );

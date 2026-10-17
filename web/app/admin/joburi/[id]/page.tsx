@@ -20,7 +20,7 @@ export default async function JobPage({ params }: { params: { id: string } }) {
   const isAdmin = role === "admin";
   // Coloane explicite: embedding-ul (384 numere) nu trebuie să ajungă în componentele client.
   const [{ data: job, error }, { data: matches, error: mErr }, { data: semantic, error: sErr }, { data: embedded }] = await Promise.all([
-    supabase.from("jobs").select("id, title, description, requirements, location, contract_type, keywords, status, created_at")
+    supabase.from("jobs").select("id, title, description, requirements, location, contract_type, keywords, status, public_apply, created_at")
       .eq("id", params.id).eq("organization_id", orgId).maybeSingle(),
     supabase.rpc("job_matches", { p_job: params.id, p_limit: 500 }),
     supabase.rpc("job_semantic_matches", { p_job: params.id, p_limit: 500 }),
@@ -55,6 +55,14 @@ export default async function JobPage({ params }: { params: { id: string } }) {
           </>
         ) : undefined}
       />
+
+      {j.public_apply && (
+        <p className="mb-6 rounded-lg border bg-card px-5 py-3 text-sm">
+          Pagina publică de aplicare:{" "}
+          <Link href={`/aplica/${j.id}`} target="_blank" className="break-all text-brand underline-offset-4 hover:underline">/aplica/{j.id}</Link>
+          {j.status === "closed" && <span className="text-muted-foreground"> (jobul e închis, deci pagina nu mai primește aplicații)</span>}
+        </p>
+      )}
 
       {(j.description || j.requirements || j.keywords.length > 0) && (
         <div className="mb-6 space-y-3 rounded-lg border bg-card p-5 text-sm">

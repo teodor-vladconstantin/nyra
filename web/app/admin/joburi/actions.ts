@@ -20,6 +20,7 @@ function readJob(f: FormData, back: string) {
     location: text(f, "location", 200),
     contract_type: text(f, "contract_type", 100),
     keywords: parseKeywords(String(f.get("keywords") ?? "")),
+    public_apply: f.get("public_apply") === "on",
   };
 }
 
