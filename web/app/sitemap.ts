@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 
+// Fără asta sitemap-ul se prerandează la build și joburile devenite publice după aceea nu apar.
+export const revalidate = 3600;
+
 const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nyra.joben.eu";
 const PAGES = ["", "/produs", "/preturi", "/faq", "/contact", "/despre", "/confidentialitate", "/termeni"];
 
