@@ -739,3 +739,19 @@ create or replace function audit_attach_all() returns int language sql as $$
   ]) t where audit_attach(t);
 $$;
 select audit_attach_all();
+
+-- ============================================================================
+-- 12. Formulare publice: leads (identic cu migrarea 20261017000000_leads.sql)
+-- ============================================================================
+create table leads (
+  id uuid primary key default gen_random_uuid(),
+  kind text not null check (kind in ('contact', 'waitlist')),
+  name text not null default '' check (length(name) <= 200),
+  email text not null check (length(email) <= 320 and email ~ '^[^@\s]+@[^@\s]+$'),
+  message text not null default '' check (length(message) <= 5000),
+  created_at timestamptz not null default now()
+);
+alter table leads enable row level security;
+create policy submit on leads for insert to anon, authenticated with check (true);
+revoke all on leads from anon, authenticated;
+grant insert on leads to anon, authenticated;
