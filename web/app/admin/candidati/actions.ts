@@ -5,7 +5,7 @@ import { requireAdmin } from "@/lib/org";
 import { triggerParse } from "@/lib/parser";
 import { SENIORITY_LABELS } from "@/lib/experience";
 import { eraseCandidate } from "@/lib/audit";
-import { STATUS_LABELS, type Status } from "@/lib/candidates";
+import { candidatesQuery, cleanParams, STATUS_LABELS, type Filters, type Status } from "@/lib/candidates";
 import { RECOMMENDATION, readScore } from "@/lib/scorecards";
 
 export async function setStatus(candidateId: string, status: Status) {
@@ -58,6 +58,27 @@ export async function markReviewed(candidateId: string) {
   revalidatePath("/admin/candidati");
   revalidatePath("/admin");
   redirect(`/admin/candidati/${candidateId}?toast=${encodeURIComponent("Marcat ca revizuit")}`);
+}
+
+const REVIEW_BATCH = 1000; // plafon per apăsare; ce rămâne se vede în listă și se marchează la a doua apăsare
+const IN_CHUNK = 200; // .in() merge în URL: 200 de uuid-uri încap sub limita PostgREST
+
+// Toți candidații „Necesită revizuire” din filtrul curent (nu doar pagina afișată), după ce recrutorul i-a verificat.
+export async function markAllReviewed(formData: FormData) {
+  const { supabase, orgId } = await requireAdmin();
+  const filters = { ...cleanParams(Object.fromEntries(formData)), parsing: "needs_review" } as Filters;
+  const { data, error } = await candidatesQuery(supabase, orgId, filters).range(0, REVIEW_BATCH - 1);
+  const ids = ((data ?? []) as { id: string }[]).map((r) => r.id);
+  let failed = !!error;
+  for (let i = 0; i < ids.length && !failed; i += IN_CHUNK) {
+    const { error: e } = await supabase.from("candidates").update({ parsing_status: "parsed" })
+      .eq("organization_id", orgId).eq("parsing_status", "needs_review").in("id", ids.slice(i, i + IN_CHUNK));
+    if (e) { console.error("mark all reviewed", e); failed = true; }
+  }
+  revalidatePath("/admin/candidati");
+  revalidatePath("/admin");
+  const msg = failed ? "Nu toți candidații au putut fi marcați" : ids.length ? `${ids.length} ${ids.length === 1 ? "candidat marcat" : "candidați marcați"} ca revizuiți` : "Nimic de marcat";
+  redirect(`/admin/candidati?toast=${encodeURIComponent(msg)}${failed ? "&type=error" : ""}`);
 }
 
 // Ștergere completă (inclusiv fișierele), ex. la cererea candidatului (GDPR).

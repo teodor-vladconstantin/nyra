@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Download, FileText } from "lucide-react";
+import { CheckCircle2, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 import { EmptyState, PageHeader } from "@/components/page-header";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { CandidatesTable } from "@/components/candidates/candidates-table";
@@ -11,6 +12,7 @@ import { getOrg } from "@/lib/org";
 import { candidatesQuery, cleanParams, isFiltered, loadFilterContext, type CandidateRow, type Filters } from "@/lib/candidates";
 import { ImportCsv } from "./import-csv";
 import { Upload } from "./upload";
+import { markAllReviewed } from "./actions";
 
 export const metadata = { title: "Candidați" };
 const PAGE = 50;
@@ -50,6 +52,13 @@ export default async function CandidatesPage({ searchParams: sp }: { searchParam
         }
       />
 
+      {role === "admin" && sp.parsing === "needs_review" && (count ?? 0) > 0 && (
+        <form action={markAllReviewed} className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/40 bg-warning/10 p-4 text-sm">
+          <p>După ce ai verificat datele extrase, scoate-i din această listă.</p>
+          {Object.entries(current).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
+          <SubmitButton variant="outline" pendingText="Se salvează…"><CheckCircle2 /> Marchează {count === 1 ? "candidatul" : `toți cei ${count}`} ca revizuiți</SubmitButton>
+        </form>
+      )}
       {role === "admin" && <Upload />}
       {role === "admin" && <ImportCsv />}
 
