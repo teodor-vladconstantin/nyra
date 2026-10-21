@@ -14,7 +14,7 @@ export function FilterForm({ sp, basePath, roleOptions, tags, filtered, showStat
   sp: Filters; basePath: string; roleOptions: string[]; tags: Tag[]; filtered: boolean; showStatus?: boolean;
 }) {
   return (
-    <form className="mb-6 grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-2 lg:grid-cols-6" role="search">
+    <form className="mb-6 grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-2 lg:grid-cols-6" role="search" data-tour="filters">
       <div className="space-y-1.5 sm:col-span-2">
         <Label htmlFor="q">Caută cuvinte cheie</Label>
         <div className="relative">

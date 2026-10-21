@@ -92,18 +92,20 @@ async function Overview() {
 
   if (total === 0) {
     return (
-      <EmptyState
-        icon={<Inbox />}
-        title="Niciun CV încărcat încă"
-        action={<Button asChild><Link href="/admin/candidati">Mergi la candidați <ArrowRight /></Link></Button>}
-      >
-        {role === "admin" ? "Încarcă primele CV-uri și vor apărea aici, cu datele extrase automat." : "Când un administrator încarcă CV-uri, le vei vedea aici."}
-      </EmptyState>
+      <div data-tour="overview">
+        <EmptyState
+          icon={<Inbox />}
+          title="Niciun CV încărcat încă"
+          action={<Button asChild><Link href="/admin/candidati">Mergi la candidați <ArrowRight /></Link></Button>}
+        >
+          {role === "admin" ? "Încarcă primele CV-uri și vor apărea aici, cu datele extrase automat." : "Când un administrator încarcă CV-uri, le vei vedea aici."}
+        </EmptyState>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="overview">
       <AutoRefresh active={processing > 0} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

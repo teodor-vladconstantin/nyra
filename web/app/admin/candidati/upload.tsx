@@ -58,7 +58,7 @@ export function Upload() {
   }
 
   return (
-    <div className="mb-6">
+    <div className="mb-6" data-tour="upload">
       <button
         type="button"
         onClick={() => input.current?.click()}

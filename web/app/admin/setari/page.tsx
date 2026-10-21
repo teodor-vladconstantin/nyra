@@ -50,7 +50,7 @@ export default async function SettingsPage() {
           <CardContent><ReplayTourButton /></CardContent>
         </Card>
 
-        <Card>
+        <Card data-tour="retention">
           <CardHeader>
             <CardTitle>Păstrarea datelor (GDPR)</CardTitle>
             <CardDescription>

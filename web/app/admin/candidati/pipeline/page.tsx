@@ -37,13 +37,15 @@ export default async function PipelinePage({ searchParams }: { searchParams: Fil
       />
       <SavedFilters basePath="/admin/candidati/pipeline" current={current} items={ctx.saved} />
       <FilterForm sp={sp} basePath="/admin/candidati/pipeline" roleOptions={ctx.roleOptions} tags={ctx.tags} filtered={filtered} showStatus={false} />
-      {rows.length === 0 ? (
-        <EmptyState icon={<KanbanSquare />} title={filtered ? "Niciun candidat nu corespunde filtrelor" : "Niciun candidat încă"}>
-          {filtered ? "Încearcă alt termen sau relaxează filtrele." : "Încarcă primele CV-uri din vizualizarea Tabel; apoi le poți muta aici între etape."}
-        </EmptyState>
-      ) : (
-        <Kanban rows={rows} total={count ?? rows.length} isAdmin={role === "admin"} />
-      )}
+      <div data-tour="board">
+        {rows.length === 0 ? (
+          <EmptyState icon={<KanbanSquare />} title={filtered ? "Niciun candidat nu corespunde filtrelor" : "Niciun candidat încă"}>
+            {filtered ? "Încearcă alt termen sau relaxează filtrele." : "Încarcă primele CV-uri din vizualizarea Tabel; apoi le poți muta aici între etape."}
+          </EmptyState>
+        ) : (
+          <Kanban rows={rows} total={count ?? rows.length} isAdmin={role === "admin"} />
+        )}
+      </div>
     </>
   );
 }

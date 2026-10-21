@@ -10,7 +10,7 @@ export function ImportCsv() {
   const [pending, start] = useTransition();
 
   return (
-    <details className="group mb-6 rounded-lg border bg-card p-4">
+    <details className="group mb-6 rounded-lg border bg-card p-4" data-tour="csv">
       <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium">
         <FileSpreadsheet className="size-4" aria-hidden /> Importă candidați din CSV (fără CV)
         <ChevronDown className="ml-auto size-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
