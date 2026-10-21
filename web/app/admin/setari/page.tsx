@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState, PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
+import { ReplayTourButton } from "@/components/tour/replay-tour-button";
 import { getOrg } from "@/lib/org";
 import { PurgeDialog } from "./purge-dialog";
 import { setRetention } from "./actions";
@@ -41,6 +42,14 @@ export default async function SettingsPage() {
       <PageHeader title="Setări" description="Retenția datelor și echipa care are acces" />
 
       <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Tur ghidat</CardTitle>
+            <CardDescription>Prezentarea secțiunilor Nyra și a modului în care lucrezi cu ele.</CardDescription>
+          </CardHeader>
+          <CardContent><ReplayTourButton /></CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Păstrarea datelor (GDPR)</CardTitle>

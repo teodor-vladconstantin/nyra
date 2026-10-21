@@ -43,7 +43,7 @@ export default async function OnboardingPage() {
       <Card className="w-full shadow-pop">
         <CardHeader>
           <CardTitle className="text-title">Cum se numește <span className="text-brand">organizația</span> ta?</CardTitle>
-          <CardDescription>Compania sau echipa care recrutează. Îl poți schimba mai târziu.</CardDescription>
+          <CardDescription>Compania sau echipa care recrutează.</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={createOrganization} className="space-y-4">

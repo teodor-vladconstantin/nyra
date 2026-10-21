@@ -1,14 +1,15 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CornerDownLeft, FileText, Loader2, Search } from "lucide-react";
+import { CornerDownLeft, FileText, Loader2, PlayCircle, Search } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { openTour } from "@/components/tour/product-tour";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav-items";
 import { useBrowserClient } from "./supabase-browser";
 
 type Hit = { id: string; name: string | null; file_name: string | null };
-type Option = { key: string; href: string; label: string; hint?: string; icon: React.ComponentType<{ className?: string }> };
+type Option = { key: string; href: string; label: string; hint?: string; icon: React.ComponentType<{ className?: string }>; run?: () => void };
 
 // Scoate caracterele cu sens în filtrul PostgREST/LIKE ca textul tastat să rămână text.
 const clean = (s: string) => s.replace(/[%_\\,()*"':]/g, " ").replace(/\s+/g, " ").trim();
@@ -61,6 +62,7 @@ export function CommandPalette({ orgId, open, onOpenChange }: { orgId: string; o
     })),
     ...NAV_ITEMS.filter((i) => !needle || i.label.toLowerCase().includes(needle))
       .map((i) => ({ key: `n-${i.href}`, href: i.href, icon: i.icon, label: i.label, hint: "Pagină" })),
+    ...(!needle || "tur ghidat".includes(needle) ? [{ key: "tour", href: "", icon: PlayCircle, label: "Tur ghidat", hint: "Acțiune", run: openTour }] : []),
     ...(q.length >= 2 ? [{ key: "all", href: `/admin/candidati?q=${encodeURIComponent(q)}`, icon: Search, label: `Caută „${q}" în toți candidații`, hint: undefined }] : []),
   ];
 
@@ -69,7 +71,8 @@ export function CommandPalette({ orgId, open, onOpenChange }: { orgId: string; o
   const go = (o: Option | undefined) => {
     if (!o) return;
     onOpenChange(false);
-    router.push(o.href);
+    if (o.run) o.run();
+    else router.push(o.href);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
