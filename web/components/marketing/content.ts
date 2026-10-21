@@ -50,23 +50,23 @@ export const FEATURES: Feature[] = [
   {
     icon: ShieldCheck,
     title: "GDPR din construcție",
-    short: "Retenție, export, ștergere și jurnal, nu doar o bifă.",
+    short: "Retenție, export, ștergere și audit, nu doar o bifă.",
     long: "Fiecare organizație își vede doar datele ei, izolat la nivel de bază de date. Retenția e configurabilă, iar exportul și ștergerea unui candidat sunt la un click.",
     points: ["Izolare pe organizație la nivel de bază de date", "Retenție în luni, cu „Șterge acum”", "Export JSON și ștergere pentru un candidat"],
   },
   {
     icon: History,
-    title: "Jurnal care nu se poate edita",
-    short: "Cine ce a schimbat și când, inclusiv pentru administratori.",
-    long: "Fiecare creare, modificare sau ștergere se înregistrează. Datele personale apar doar ca „date personale”, iar jurnalul nu poate fi modificat sau șters de nimeni.",
-    points: ["Roluri admin și viewer", "Valorile personale nu ajung în jurnal", "Verificabil la audit"],
+    title: "Audit care nu se poate edita",
+    short: "Fiecare modificare e înregistrată, inclusiv a administratorilor.",
+    long: "Fiecare creare, modificare sau ștergere se înregistrează la nivel de bază de date. Datele personale apar doar ca „date personale”, iar înregistrările nu pot fi modificate sau șterse de nimeni.",
+    points: ["Roluri admin și viewer", "Valorile personale nu ajung în audit", "Verificabil la audit"],
   },
 ];
 
 export const DIFFERENCES = [
   { title: "Făcut pentru piața noastră", text: "Diacritice, formate locale și CV-uri în română sau engleză sunt cazul de bază, nu o excepție." },
   { title: "Fără ATS greoi", text: "Nu configurezi zeci de câmpuri. Încarci CV-uri și ai candidați structurați, gata de filtrat." },
-  { title: "GDPR integrat", text: "Retenție, export, ștergere și jurnal sunt în produs de la început, nu un modul separat." },
+  { title: "GDPR integrat", text: "Retenție, export, ștergere și audit sunt în produs de la început, nu un modul separat." },
   { title: "Potrivire care înțelege", text: "Nu doar cuvinte identice: un job în română găsește un CV în engleză cu aceeași experiență." },
 ];
 
@@ -88,7 +88,7 @@ export const FAQS: Faq[] = [
   { group: "Date și GDPR", q: "Cine vede datele candidaților mei?", a: "Doar membrii organizației tale. Izolarea între organizații este impusă la nivel de bază de date, nu doar în aplicație." },
   { group: "Date și GDPR", q: "Pot șterge sau exporta datele unui candidat?", a: "Da. Exportul produce un fișier JSON cu fișa, experiențele, notele și scorecard-urile. Ștergerea unui candidat este disponibilă administratorilor." },
   { group: "Date și GDPR", q: "Cât timp se păstrează datele?", a: "Tu stabilești perioada de retenție, în luni, pentru organizația ta. Candidații expirați pot fi șterși cu „Șterge acum”." },
-  { group: "Date și GDPR", q: "Există un istoric al modificărilor?", a: "Da. Jurnalul de activitate înregistrează cine a creat, modificat sau șters ce. Nu poate fi editat sau șters, nici de administratori, iar datele personale apar doar ca „date personale”." },
+  { group: "Date și GDPR", q: "Există un istoric al modificărilor?", a: "Da. Auditul înregistrează la nivel de bază de date cine a creat, modificat sau șters ce. Nu poate fi editat sau șters, nici de administratori, iar datele personale apar doar ca „date personale”." },
   { group: "Prețuri", q: "Cât costă Nyra?", a: "În perioada de lansare Nyra este gratuit, cu acces la toate funcțiile. Planurile plătite vor fi anunțate înainte să intre în vigoare." },
   { group: "Prețuri", q: "Voi fi taxat fără să știu?", a: "Nu. Nu cerem card la acest moment, iar orice plan plătit va fi anunțat din timp." },
   { group: "Prețuri", q: "Cum aflu când apar planurile plătite?", a: "Intră pe lista de așteptare din pagina de prețuri și îți scriem când sunt gata." },

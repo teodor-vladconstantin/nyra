@@ -51,7 +51,7 @@ export async function deleteCandidate(candidateId: string) {
   const { data: c } = await supabase
     .from("candidates").select("cv_url, preview_path").eq("id", candidateId).eq("organization_id", orgId).maybeSingle();
   if (!c) redirect("/admin/candidati");
-  // erase_candidate șterge rândurile (cu rând 'erase' în jurnal) și întoarce fișierele din bucket.
+  // erase_candidate șterge rândurile (cu rând 'erase' în audit) și întoarce fișierele din bucket.
   await eraseCandidate(supabase, candidateId);
   revalidatePath("/admin/candidati");
   redirect(`/admin/candidati?toast=${encodeURIComponent("Candidatul și CV-ul au fost șterse")}`);

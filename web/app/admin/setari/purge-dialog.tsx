@@ -18,7 +18,7 @@ export function PurgeDialog({ expired, months }: { expired: number; months: numb
           <DialogTitle>Ștergi {expired} {expired === 1 ? "candidat" : "candidați"}?</DialogTitle>
           <DialogDescription>
             Candidații adăugați acum mai mult de {months} luni vor fi șterși definitiv, împreună cu CV-urile, experiențele
-            și notele lor. Acțiunea nu poate fi anulată; rămâne doar o înregistrare în jurnalul de activitate.
+            și notele lor. Acțiunea nu poate fi anulată.
           </DialogDescription>
         </DialogHeader>
         <form action={async () => { setOpen(false); await purgeExpired(); }}>

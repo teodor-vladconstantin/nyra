@@ -12,7 +12,7 @@ export const metadata = {
   description: "Nyra citește CV-urile și le transformă în candidați structurați: căutare, potrivire cu joburi, pipeline și GDPR integrat. Gratuit în perioada de lansare.",
 };
 
-const TRUST = ["PDF și DOCX", "Română și engleză", "GDPR integrat", "Jurnal imuabil"];
+const TRUST = ["PDF și DOCX", "Română și engleză", "GDPR integrat", "Audit imuabil"];
 
 export default function Landing() {
   return (

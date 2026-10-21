@@ -1,4 +1,4 @@
-import { BookOpenCheck, Briefcase, Copy, KanbanSquare, LayoutDashboard, Settings, Users, type LucideIcon } from "lucide-react";
+import { Briefcase, Copy, KanbanSquare, LayoutDashboard, Settings, Users, type LucideIcon } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon; key: string };
 
@@ -9,7 +9,6 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/admin/candidati/pipeline", label: "Pipeline", icon: KanbanSquare, key: "p" },
   { href: "/admin/joburi", label: "Joburi", icon: Briefcase, key: "o" },
   { href: "/admin/candidati/dedupe", label: "Dedupe", icon: Copy, key: "d" },
-  { href: "/admin/jurnal", label: "Jurnal", icon: BookOpenCheck, key: "j" },
   { href: "/admin/setari", label: "Setări", icon: Settings, key: "s" },
 ];
 

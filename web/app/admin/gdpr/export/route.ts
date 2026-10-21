@@ -1,7 +1,7 @@
 import { getOrg } from "@/lib/org";
 
 // Export al datelor unui candidat (dreptul de acces, GDPR): fișa, experiențele, notele și evaluările, ca JSON.
-// Fiecare export se înregistrează în jurnalul de activitate.
+// Fiecare export se înregistrează în auditul din baza de date.
 export async function GET(request: Request) {
   const { supabase, orgId } = await getOrg();
   const id = new URL(request.url).searchParams.get("id") ?? "";

@@ -16,7 +16,7 @@ export const metadata = {
 const PLANS = [
   {
     name: "Lansare", price: "Gratuit", note: "Pe durata lansării", soon: false,
-    points: ["Toate funcțiile din pagina de produs", "Parsare PDF și DOCX", "Potrivire cu joburi și scorecard-uri", "GDPR: retenție, export, jurnal"],
+    points: ["Toate funcțiile din pagina de produs", "Parsare PDF și DOCX", "Potrivire cu joburi și scorecard-uri", "GDPR: retenție, export, audit"],
   },
   {
     name: "Echipă", price: "În curând", note: "Pentru echipe de recrutare", soon: true,
