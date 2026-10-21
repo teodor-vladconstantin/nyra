@@ -13,7 +13,7 @@ await db.query(
 
 // ---- Enum: ordinea pipeline-ului ----
 const statuses = (await one("select enum_range(null::candidate_status)::text[] s")).s;
-assert.deepEqual(statuses, ["new", "to_contact", "shortlisted", "interview", "offer", "hired", "rejected"]);
+assert.deepEqual(statuses, ["new", "to_contact", "shortlisted", "interview", "offer", "hired", "deselected", "rejected"]);
 
 // ---- Setup ca service/parser: doi candidați cu același CV (duplicate_of), unul în altă organizație ----
 await as("service_role");
@@ -31,7 +31,7 @@ const tag2 = (await one("insert into tags (organization_id, name) values ($1,'Al
 
 // ---- Tranziții de status: orice etapă -> orice etapă, valorile vechi rămân valide ----
 await as("authenticated", A);
-for (const s of ["to_contact", "shortlisted", "interview", "offer", "hired", "rejected", "interview", "new"]) {
+for (const s of ["to_contact", "shortlisted", "interview", "offer", "hired", "deselected", "rejected", "interview", "new"]) {
   await db.query("update candidates set status=$1 where id=$2", [s, ana]);
   assert.equal((await one("select status from candidate_overview where id=$1", [ana])).status, s);
 }

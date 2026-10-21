@@ -64,7 +64,7 @@ create policy cv_delete on storage.objects for delete to authenticated
 -- =====================================================================
 -- 4. Candidați
 -- =====================================================================
-create type candidate_status as enum ('new', 'to_contact', 'shortlisted', 'interview', 'offer', 'hired', 'rejected');
+create type candidate_status as enum ('new', 'to_contact', 'shortlisted', 'interview', 'offer', 'hired', 'deselected', 'rejected');
 create type employment_type as enum ('full_time', 'part_time', 'contract', 'internship', 'freelance');
 create type seniority_level as enum ('junior', 'mid', 'senior', 'lead');
 create type parsing_status as enum ('pending', 'processing', 'parsed', 'needs_review', 'failed');
