@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CopyCheck, Download, FileText, Mail, MapPin, Pencil, Phone, RefreshCw } from "lucide-react";
+import { ArrowLeft, CheckCircle2, CopyCheck, Download, FileText, Mail, MapPin, Pencil, Phone, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +13,7 @@ import { getOrg } from "@/lib/org";
 import { EMPLOYMENT_LABELS, formatPeriod, type EmploymentType } from "@/lib/experience";
 import { STATUS_LABELS, type Status } from "@/lib/candidates";
 import { DUPLICATE_REASONS, duplicatesOf, type DuplicateKind } from "@/lib/duplicates";
-import { addNote, addScorecard, deleteScorecard, reparse } from "../actions";
+import { addNote, addScorecard, deleteScorecard, markReviewed, reparse } from "../actions";
 import { StatusSelect } from "../status-select";
 import { ContactDialog } from "./contact-dialog";
 import { DeleteButton } from "./delete-button";
@@ -151,9 +151,14 @@ export default async function CandidatePage({ params, searchParams }: { params: 
         <div className="order-1 min-w-0 lg:order-2">
           <p className="mb-4 text-sm">Extragere date: <ParsingBadge status={parsing} /></p>
           {parsing === "needs_review" && (
-            <p role="status" className="mb-4 rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
-              Extragerea automată nu a reușit complet. Verifică CV-ul și corectează datele cu butoanele de editare.
-            </p>
+            <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
+              <p>Extragerea automată nu a reușit complet. Verifică CV-ul și corectează datele cu butoanele de editare.</p>
+              {isAdmin && (
+                <form action={markReviewed.bind(null, c.id)}>
+                  <SubmitButton variant="outline" size="sm" pendingText="Se salvează…"><CheckCircle2 /> Marchează ca revizuit</SubmitButton>
+                </form>
+              )}
+            </div>
           )}
           {parsing === "failed" && (
             <p role="alert" className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">

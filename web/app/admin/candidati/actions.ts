@@ -45,6 +45,21 @@ export async function reparse(candidateId: string) {
   redirect(`/admin/candidati/${candidateId}?toast=${encodeURIComponent(sent ? "CV-ul a fost trimis la reprocesare" : "Serviciul de parsing nu răspunde")}${sent ? "" : "&type=error"}`);
 }
 
+// Recrutorul a verificat datele extrase: „Necesită revizuire” devine „Procesat”. Condiția pe status face acțiunea idempotentă.
+export async function markReviewed(candidateId: string) {
+  const { supabase, orgId } = await requireAdmin();
+  const { error } = await supabase.from("candidates").update({ parsing_status: "parsed" })
+    .eq("id", candidateId).eq("organization_id", orgId).eq("parsing_status", "needs_review");
+  if (error) {
+    console.error("mark reviewed", error);
+    redirect(`/admin/candidati/${candidateId}?toast=${encodeURIComponent("Statusul nu a putut fi schimbat")}&type=error`);
+  }
+  revalidatePath(`/admin/candidati/${candidateId}`);
+  revalidatePath("/admin/candidati");
+  revalidatePath("/admin");
+  redirect(`/admin/candidati/${candidateId}?toast=${encodeURIComponent("Marcat ca revizuit")}`);
+}
+
 // Ștergere completă (inclusiv fișierele), ex. la cererea candidatului (GDPR).
 export async function deleteCandidate(candidateId: string) {
   const { supabase, orgId } = await requireAdmin();
