@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, FileUp, Loader2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { uploadCv } from "./actions";
+import type { UploadResult } from "./upload/route";
 
 type Item = { key: string; name: string; state: "waiting" | "uploading" | "done" | "error"; error?: string };
 const CONCURRENCY = 3;
@@ -39,7 +39,7 @@ export function Upload() {
         const fd = new FormData();
         fd.append("file", files[i]);
         try {
-          const res = await uploadCv(fd);
+          const res: UploadResult = await (await fetch("/admin/candidati/upload", { method: "POST", body: fd })).json();
           if (res.ok) ok++;
           if (res.ok && res.duplicate) dupes.push(`${files[i].name} (la fel ca ${res.duplicate.name})`);
           update(batch[i].key, res.ok ? { state: "done" } : { state: "error", error: res.error });

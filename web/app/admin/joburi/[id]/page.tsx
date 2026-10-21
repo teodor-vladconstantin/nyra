@@ -6,6 +6,7 @@ import { EmptyState, PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/badges";
 import { SubmitButton } from "@/components/submit-button";
 import { getOrg } from "@/lib/org";
+import { cn } from "@/lib/utils";
 import { SENIORITY_LABELS } from "@/lib/experience";
 import { JOB_STATUS, type Job, type JobMatch, type JobMatchDetail, type JobSemantic } from "@/lib/jobs";
 import { deleteJob, embedJob, setJobStatus, toggleCandidate, updateJob } from "../actions";
@@ -14,7 +15,7 @@ import { JobForm } from "../job-form";
 export const metadata = { title: "Job" };
 const UUID = /^[0-9a-f-]{36}$/i;
 
-export default async function JobPage({ params }: { params: { id: string } }) {
+export default async function JobPage({ params, searchParams }: { params: { id: string }; searchParams: { doar?: string } }) {
   if (!UUID.test(params.id)) notFound();
   const { supabase, orgId, role } = await getOrg();
   const isAdmin = role === "admin";
@@ -32,10 +33,12 @@ export default async function JobPage({ params }: { params: { id: string } }) {
   const j = job as Job;
   const sim = new Map(((semantic ?? []) as JobSemantic[]).map((s) => [s.candidate_id, s.similarity]));
   // Atașații primii, apoi cei mai apropiați semantic (dacă există), apoi după cuvintele cheie.
+  const onlyAttached = searchParams.doar === "atasati";
   const rows = ((matches ?? []) as JobMatch[])
+    .filter((r) => !onlyAttached || r.attached)
     .sort((a, b) => Number(b.attached) - Number(a.attached) || (sim.get(b.candidate_id) ?? -1) - (sim.get(a.candidate_id) ?? -1) || b.matched - a.matched)
     .slice(0, 100);
-  const attached = rows.filter((r) => r.attached).length;
+  const attached = ((matches ?? []) as JobMatch[]).filter((r) => r.attached).length;
   // Motivele scorului pentru rândurile afișate (cele 100 de mai sus), aceeași regulă ca job_matches.
   const { data: detailRows, error: dErr } = await supabase.rpc("job_match_detail", { p_job: params.id, p_candidates: rows.map((r) => r.candidate_id) });
   if (dErr) throw dErr;
@@ -104,6 +107,12 @@ export default async function JobPage({ params }: { params: { id: string } }) {
       <h2 className="mb-3 text-sm font-medium">
         Candidați potriviți <span className="text-muted-foreground">· {attached === 1 ? "1 atașat" : `${attached} atașați`}</span>
       </h2>
+      <div className="mb-3 flex gap-2 text-sm" role="group" aria-label="Filtru candidați">
+        <Link href={`/admin/joburi/${j.id}`} aria-current={!onlyAttached ? "true" : undefined}
+          className={cn("rounded-full border px-3 py-1", !onlyAttached ? "bg-accent font-medium" : "text-muted-foreground hover:bg-accent/50")}>Toți</Link>
+        <Link href={`/admin/joburi/${j.id}?doar=atasati`} aria-current={onlyAttached ? "true" : undefined}
+          className={cn("rounded-full border px-3 py-1", onlyAttached ? "bg-accent font-medium" : "text-muted-foreground hover:bg-accent/50")}>Doar atașați ({attached})</Link>
+      </div>
       {!embedded && isAdmin && (
         <form action={embedJob.bind(null, j.id)} className="mb-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
           Potrivirea semantică nu e calculată pentru acest job.
@@ -119,7 +128,9 @@ export default async function JobPage({ params }: { params: { id: string } }) {
         </ul>
       </details>
       {rows.length === 0 ? (
-        <EmptyState title="Niciun candidat încă">Încarcă CV-uri la Candidați; apar aici clasate după potrivire.</EmptyState>
+        <EmptyState title={onlyAttached ? "Niciun candidat atașat" : "Niciun candidat încă"}>
+          {onlyAttached ? "Atașează candidați din lista „Toți”." : "Încarcă CV-uri la Candidați; apar aici clasate după potrivire."}
+        </EmptyState>
       ) : (
         <div className="overflow-x-auto rounded-lg border">
           <Table>

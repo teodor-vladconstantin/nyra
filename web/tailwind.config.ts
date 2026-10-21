@@ -55,6 +55,7 @@ const config: Config = {
   				interview: 'oklch(var(--status-interview) / <alpha-value>)',
   				offer: 'oklch(var(--status-offer) / <alpha-value>)',
   				hired: 'oklch(var(--status-hired) / <alpha-value>)',
+  				deselected: 'oklch(var(--status-deselected) / <alpha-value>)',
   				rejected: 'oklch(var(--status-rejected) / <alpha-value>)'
   			},
   			brand: {

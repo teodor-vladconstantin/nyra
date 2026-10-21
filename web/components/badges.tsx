@@ -38,6 +38,7 @@ export const CANDIDATE_STATUS_LABELS = {
   interview: "Interviu",
   offer: "Ofertă",
   hired: "Angajat",
+  deselected: "Deselectat",
   rejected: "Respins",
 } as const;
 export type CandidateStatus = keyof typeof CANDIDATE_STATUS_LABELS;
@@ -49,6 +50,7 @@ const STATUS_TONE: Record<CandidateStatus, string> = {
   interview: "bg-status-interview/10 text-status-interview",
   offer: "bg-status-offer/10 text-status-offer",
   hired: "bg-status-hired/10 text-status-hired",
+  deselected: "bg-status-deselected/10 text-status-deselected",
   rejected: "bg-status-rejected/10 text-status-rejected",
 };
 
@@ -60,6 +62,7 @@ export const STATUS_DOT: Record<CandidateStatus, string> = {
   interview: "bg-status-interview",
   offer: "bg-status-offer",
   hired: "bg-status-hired",
+  deselected: "bg-status-deselected",
   rejected: "bg-status-rejected",
 };
 

@@ -10,6 +10,7 @@ export const STATUS_LABELS = {
   interview: "Interviu",
   offer: "Ofertă",
   hired: "Angajat",
+  deselected: "Deselectat",
   rejected: "Respins",
 } as const;
 export type Status = keyof typeof STATUS_LABELS;
@@ -22,6 +23,7 @@ export const STATUS_TONES: Record<Status, string> = {
   interview: "bg-warning/15 text-warning",
   offer: "bg-primary/10 text-primary",
   hired: "bg-success/25 text-success",
+  deselected: "bg-warning/15 text-warning",
   rejected: "bg-destructive/10 text-destructive",
 };
 
