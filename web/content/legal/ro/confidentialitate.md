@@ -45,10 +45,10 @@ Unii furnizori sunt din SUA sau aparțin unor grupuri din SUA (Clerk, Vercel, Cl
 
 | Date | Termen |
 |---|---|
-| Cont și date de organizație | Cât timp contul este activ, plus 30 de zile după ștergere. |
+| Cont și date de organizație | Cât timp contul este activ. La ștergerea contului (buton în Setări) se șterg imediat din aplicație; copiile din backup expiră la furnizor. Acceptările legale (identificator pseudonim, dată, versiune) se păstrează ca dovadă. |
 | Notele și scorecard-urile | Cât timp organizația există, sub controlul organizației. |
-| Mesaje din formulare (contact, listă de așteptare) | 12 luni de la ultimul contact. [DE COMPLETAT: implementarea ștergerii automate.] |
-| Jurnal de activitate | [DE COMPLETAT: termen; jurnalul conține identificatorul utilizatorului și nu poate fi modificat. DE VERIFICAT DE AVOCAT.] |
+| Mesaje din formulare (contact, listă de așteptare) | 12 luni de la trimitere, apoi se șterg automat. |
+| Jurnal de activitate | 24 de luni, apoi se șterge automat. La ștergerea contului, jurnalul organizației se șterge odată cu ea. Nu poate fi modificat din aplicație. |
 | Loguri tehnice la furnizori | Conform setărilor lor. [DE COMPLETAT: Vercel și Oracle, după verificare.] |
 | Copii de rezervă | Expiră automat la furnizor. [DE COMPLETAT: după verificarea planului Supabase.] |
 
@@ -58,7 +58,7 @@ Folosim cookie-urile și stocarea locală descrise în Politica de cookies. Cele
 
 ## 8. Drepturile tale
 
-Ai dreptul de acces, rectificare, ștergere, restricționare, portabilitate și opoziție (pentru prelucrările bazate pe interes legitim), plus dreptul de a-ți retrage consimțământul oricând, fără să afecteze legalitatea prelucrării anterioare. Scrie la privacy@joben.eu; răspundem în cel mult o lună. Ștergerea contului se face la cerere, prin email, până la implementarea unui buton în aplicație. [DE COMPLETAT]
+Ai dreptul de acces, rectificare, ștergere, restricționare, portabilitate și opoziție (pentru prelucrările bazate pe interes legitim), plus dreptul de a-ți retrage consimțământul oricând, fără să afecteze legalitatea prelucrării anterioare. Scrie la privacy@joben.eu; răspundem în cel mult o lună. Poți exporta toate datele și îți poți șterge contul din Setări, sau ne poți scrie.
 
 Ai dreptul să depui plângere la Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP): dataprotection.ro, Bd. G-ral. Gheorghe Magheru nr. 28-30, sector 1, București. [DE VERIFICAT: adresa curentă.]
 

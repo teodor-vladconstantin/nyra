@@ -3,7 +3,9 @@
 > **Versiune:** 0.1 (ciornă) | **În vigoare de la:** [DE COMPLETAT la lansare] | **Ultima actualizare:** 22 octombrie 2026
 > **Furnizor al instrumentului (împuternicit):** TETA ABC SRL, CUI 22404824, Str. Centrală nr. 169, sat Mărăcineni, jud. Buzău | **Contact:** privacy@joben.eu
 >
-> **Pentru recrutori.** Acesta este un model. Completați câmpurile {{...}} cu datele companiei voastre. Voi sunteți operatorul datelor candidaților și răspundeți de conținutul final. Textul trebuie transmis candidatului în cel mult o lună de la primirea datelor sau la primul contact, dacă ați primit CV-ul de la el sau din altă sursă. [DE VERIFICAT DE AVOCAT]
+> **Pentru recrutori.** Nyra afișează deja o notă generată automat pe pagina voastră de aplicare (`/aplica/<job>/informare`), cu emailul de contact din Setări, retenția setată și formular de cereri; o puteți înlocui cu propriul link în Setări. Textul de mai jos este un model pentru emailuri, formulare proprii sau nota voastră.
+>
+> Acesta este un model. Completați câmpurile {{...}} cu datele companiei voastre. Voi sunteți operatorul datelor candidaților și răspundeți de conținutul final. Textul trebuie transmis candidatului în cel mult o lună de la primirea datelor sau la primul contact, dacă ați primit CV-ul de la el sau din altă sursă. [DE VERIFICAT DE AVOCAT]
 
 ## Varianta completă (pentru pagina voastră de carieră, formular sau atașament la email)
 

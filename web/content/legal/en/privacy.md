@@ -47,10 +47,10 @@ Some suppliers are in the USA or belong to US groups (Clerk, Vercel, Cloudflare,
 
 | Data | Period |
 |---|---|
-| Account and organisation data | While the account is active, plus 30 days after deletion. |
+| Account and organisation data | While the account is active. On account deletion (button in Settings) it is deleted from the application immediately; backup copies expire at the supplier. Legal acceptances (pseudonymous identifier, date, version) are kept as proof. |
 | Notes and scorecards | While the organisation exists, under the organisation's control. |
-| Form messages (contact, waiting list) | 12 months from the last contact. [TO BE COMPLETED: implementing automatic deletion.] |
-| Activity log | [TO BE COMPLETED: period; the log contains the user identifier and cannot be modified. TO BE VERIFIED BY LAWYER.] |
+| Form messages (contact, waiting list) | 12 months from submission, then deleted automatically. |
+| Activity log | 24 months, then deleted automatically. On account deletion, the organisation's log is deleted with it. It cannot be modified from the application. |
 | Technical logs at suppliers | According to their settings. [TO BE COMPLETED: Vercel and Oracle, after checking.] |
 | Backups | Expire automatically at the supplier. [TO BE COMPLETED: after checking the Supabase plan.] |
 
@@ -60,7 +60,7 @@ We use the cookies and local storage described in the Cookie Policy. Strictly ne
 
 ## 8. Your rights
 
-You have the right of access, rectification, erasure, restriction, portability and objection (for processing based on legitimate interest), plus the right to withdraw consent at any time without affecting the lawfulness of earlier processing. Write to privacy@joben.eu; we reply within one month. Account deletion is done on request by email until a button is implemented in the application. [TO BE COMPLETED]
+You have the right of access, rectification, erasure, restriction, portability and objection (for processing based on legitimate interest), plus the right to withdraw consent at any time without affecting the lawfulness of earlier processing. Write to privacy@joben.eu; we reply within one month. You can export all your data and delete your account from Settings, or write to us.
 
 You have the right to lodge a complaint with the National Supervisory Authority for Personal Data Processing (ANSPDCP): dataprotection.ro, Bd. G-ral. Gheorghe Magheru no. 28-30, sector 1, Bucharest. [TO BE VERIFIED: current address.]
 

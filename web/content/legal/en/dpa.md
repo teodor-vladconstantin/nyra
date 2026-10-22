@@ -24,7 +24,7 @@ This agreement is part of the Nyra Terms of Use. It is accepted by the User who 
 | Nature of processing | Collection (upload, CSV import, public form), storage, structuring, extraction of text and data, similarity calculation, display, export, deletion. |
 | Categories of data subjects | Candidates, referees mentioned in CVs (incidentally), the Customer's Users (in the notes and evaluations they create). |
 | Categories of data | Name, email, phone, location, CV (original file and PDF preview), extracted text, skills, experience, education, years of experience, seniority level, similarity vector (computed), the Customer's notes and scorecards, status, application source, consent timestamp (for the public form). Special category data may appear in CV content (see 5.3). |
-| Duration | While the Customer has an account, within the retention period set by the Customer. Default [TO BE COMPLETED: 12 months from last activity, to be implemented]. |
+| Duration | While the Customer has an account, within the retention period set by the Customer. Default 12 months from the date the candidate was added, configurable by the Customer between 1 and 24 months; deletion is automatic, daily. |
 
 ## 3. Nyra's obligations
 
@@ -97,7 +97,7 @@ We describe only measures that exist in the product. We do not claim certificati
 - **Transport:** HTTPS with HSTS; security headers (CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy).
 - **Extraction service:** access protected by a shared secret token; neutral file names sent to LlamaCloud (random identifiers, not the original name).
 - **Activity log:** changes are recorded without candidates' personal content (personal fields appear only as "redacted"); the log cannot be modified from the application.
-- **Deletion:** permanent deletion of the candidate, their files and derived data; automatic deletion when the set period expires. [TO BE COMPLETED: automation, being implemented.]
+- **Deletion:** permanent deletion of the candidate, their files and derived data; automatic daily deletion when the set period expires; deletion of the account and organisation from Settings; after processing, the job and file sent to LlamaCloud are deleted at the supplier (best effort; otherwise they expire after 48 hours).
 - **Abuse protection:** honeypot field and a cap on applications on the public form.
 - **Automated tests** of access rules and of deletion and export flows, during development.
 - **We do not claim:** tested backups, redundancy, certifications (ISO 27001, SOC 2) or penetration tests, as long as they are not in place. [TO BE COMPLETED after commercial launch.]

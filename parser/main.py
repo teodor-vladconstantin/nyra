@@ -306,27 +306,34 @@ async def llama_extract(http: httpx.AsyncClient, filename: str, content: bytes) 
     r = await http.post(f"{LLAMA_API}/v1/beta/files", headers=auth,
                         files={"file": (filename, content)}, data={"purpose": "extract"})
     r.raise_for_status()
-    r = await http.post(f"{LLAMA_API}/v2/extract", headers=auth, json={
-        "file_input": r.json()["id"],
-        "configuration": {
-            "tier": "agentic",
-            "extraction_target": "per_doc",
-            "data_schema": DATA_SCHEMA,
-            "system_prompt": SYSTEM_PROMPT,
-        },
-    })
-    r.raise_for_status()
-    job_id = r.json()["id"]
-    for _ in range(150):  # ~5 minute
-        await asyncio.sleep(2)
-        r = await http.get(f"{LLAMA_API}/v2/extract/{job_id}", headers=auth)
+    file_id = r.json()["id"]
+    job_id = None
+    try:
+        r = await http.post(f"{LLAMA_API}/v2/extract", headers=auth, json={
+            "file_input": file_id,
+            "configuration": {
+                "tier": "agentic",
+                "extraction_target": "per_doc",
+                "data_schema": DATA_SCHEMA,
+                "system_prompt": SYSTEM_PROMPT,
+            },
+        })
         r.raise_for_status()
-        job = r.json()
-        if job["status"] == "COMPLETED":
-            return job["extract_result"] or {}
-        if job["status"] in ("FAILED", "CANCELLED", "ERROR"):
-            raise RuntimeError(f"LlamaExtract job {job_id} {job['status']}: {job.get('error_message')}")
-    raise TimeoutError(f"LlamaExtract job {job_id} did not finish")
+        job_id = r.json()["id"]
+        for _ in range(150):  # ~5 minute
+            await asyncio.sleep(2)
+            r = await http.get(f"{LLAMA_API}/v2/extract/{job_id}", headers=auth)
+            r.raise_for_status()
+            job = r.json()
+            if job["status"] == "COMPLETED":
+                return job["extract_result"] or {}
+            if job["status"] in ("FAILED", "CANCELLED", "ERROR"):
+                raise RuntimeError(f"LlamaExtract job {job_id} {job['status']}: {job.get('error_message')}")
+        raise TimeoutError(f"LlamaExtract job {job_id} did not finish")
+    finally:
+        if job_id:
+            await llama_delete(http, f"{LLAMA_API}/v2/extract/{job_id}")
+        await llama_delete(http, f"{LLAMA_API}/v1/beta/files/{file_id}")
 
 
 async def make_preview(http: httpx.AsyncClient, org_id: str, filename: str, content: bytes) -> str | None:
@@ -382,9 +389,22 @@ async def llamaparse(http: httpx.AsyncClient, filename: str, content: bytes) -> 
             raise RuntimeError(f"LlamaParse job {job_id} {job['status']}: {job.get('error_message')}")
     else:
         raise TimeoutError(f"LlamaParse job {job_id} did not finish")
-    r = await http.get(f"{LLAMA_URL}/{job_id}", headers=auth, params={"expand": "text_full"})
-    r.raise_for_status()
-    return r.json()["text_full"]
+    try:
+        r = await http.get(f"{LLAMA_URL}/{job_id}", headers=auth, params={"expand": "text_full"})
+        r.raise_for_status()
+        return r.json()["text_full"]
+    finally:
+        await llama_delete(http, f"{LLAMA_URL}/{job_id}")
+
+
+async def llama_delete(http: httpx.AsyncClient, url: str):
+    """Minimizare GDPR: după procesare ștergem jobul și fișierul de la LlamaCloud (altfel rămân până la 48 h). Best effort: un eșec nu strică parsarea."""
+    try:
+        r = await http.delete(url, headers={"Authorization": f"Bearer {LLAMA_KEY}"})
+        if r.status_code >= 400:
+            log.warning("LlamaCloud delete %s -> %s", url.rsplit("/api/", 1)[-1], r.status_code)
+    except Exception as e:
+        log.warning("LlamaCloud delete failed %s: %r", url.rsplit("/api/", 1)[-1], e)
 
 
 async def sweep_loop():

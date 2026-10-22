@@ -11,7 +11,7 @@ import { jobPostingJsonLd, toScriptJson } from "@/lib/job-posting";
 import { createClient } from "@/lib/supabase";
 
 const UUID = /^[0-9a-f-]{36}$/i;
-type PublicJob = { title: string; description: string; requirements: string; location: string; contract_type: string; company: string; posted_at: string };
+type PublicJob = { title: string; description: string; requirements: string; location: string; contract_type: string; company: string; posted_at: string; notice_url: string | null };
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nyra.joben.eu";
 
 async function loadJob(id: string) {
@@ -95,13 +95,18 @@ export default async function ApplyPage({ params, searchParams }: { params: { id
             <label className="flex items-start gap-2 text-sm text-muted-foreground">
               <input type="checkbox" name="consent" required className="mt-1 size-4 accent-primary" />
               <span>
-                Sunt de acord ca {job.company} să îmi prelucreze datele din CV pentru acest proces de recrutare.{" "}
-                <Link href="/confidentialitate" className="text-brand underline-offset-4 hover:underline">Politica de confidențialitate</Link>.
+                Am citit{" "}
+                <Link href={`/aplica/${params.id}/informare`} target="_blank" className="text-brand underline-offset-4 hover:underline">informarea privind datele personale</Link>
+                {" "}și sunt de acord ca {job.company} să îmi prelucreze datele din CV pentru acest proces de recrutare, cu ajutorul unui instrument care extrage și ordonează automat candidaturile (nicio decizie nu este luată automat).
               </span>
             </label>
             <SubmitButton pendingText="Se trimite…">Trimite aplicația</SubmitButton>
           </form>
         )}
+        <p className="text-caption text-muted-foreground">
+          Anunț ilegal sau înșelător?{" "}
+          <a href={`mailto:hello@joben.eu?subject=${encodeURIComponent(`Raportare anunț ${params.id}`)}`} className="underline-offset-4 hover:underline">Raportează-l</a>.
+        </p>
       </main>
     </div>
   );

@@ -19,7 +19,7 @@ Fără acestea nu funcționează autentificarea sau securitatea. Conform Legii 5
 | `__client_uat` | Clerk | Sincronizează starea autentificării între file | [DE VERIFICAT, aprox. 1 an] |
 | `__clerk_db_jwt` | Clerk | Token tehnic (doar în dezvoltare) | Sesiune |
 | Cloudflare Turnstile / Clerk Protect | Cloudflare / Clerk | Verificare anti-bot la înregistrare, doar pe paginile de înregistrare | [DE VERIFICAT: ce stochează, dacă stochează] [DE VERIFICAT DE AVOCAT: dacă sunt strict necesare] |
-| `joben_nyra_consent` (de implementat) | Nyra | Păstrează alegerea ta privind cookie-urile, cu data și versiunea politicii | 12 luni |
+| `nyra_consent` (stocare locală) | Nyra | Păstrează alegerea ta privind cookie-urile, cu data și versiunea politicii | 12 luni |
 
 ## Preferințe (stocare locală)
 

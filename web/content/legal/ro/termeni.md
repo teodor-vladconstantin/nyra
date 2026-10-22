@@ -95,7 +95,7 @@ Nyra, codul, designul, marca și documentația aparțin TETA ABC SRL sau licenț
 
 ## 13. Datele Clientului: export, ștergere și schimbarea furnizorului
 
-13.1. Poți exporta datele candidaților (export CSV al listei și export JSON al fișei unui candidat) și poți șterge candidați individuali. [DE COMPLETAT: export complet al organizației, în curs de implementare.]
+13.1. Poți exporta datele candidaților (export CSV al listei, export JSON al fișei unui candidat și export JSON complet al organizației, cu linkuri de descărcare a CV-urilor valabile 24 de ore), poți șterge candidați individuali și poți șterge contul cu toate datele din Setări.
 
 13.2. La încetare, ne poți cere (a) exportul datelor într-un format structurat și (b) ștergerea lor. Răspundem în cel mult [DE COMPLETAT: 30] de zile. Preavizul de încetare este de maximum 2 luni, iar perioada de tranziție de maximum 30 de zile, conform Regulamentului (UE) 2023/2854 (Data Act). [DE VERIFICAT DE AVOCAT: aplicabilitatea capitolului VI la un serviciu gratuit beta.]
 

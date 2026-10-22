@@ -95,7 +95,7 @@ Nyra, its code, design, trademark and documentation belong to TETA ABC SRL or it
 
 ## 13. Customer Data: export, deletion and switching provider
 
-13.1. You can export candidate data (CSV export of the list and JSON export of a candidate's record) and delete individual candidates. [TO BE COMPLETED: full organisation export, being implemented.]
+13.1. You can export candidate data (CSV export of the list, JSON export of a candidate's record and a complete JSON export of the organisation, with CV download links valid for 24 hours), delete individual candidates and delete the account with all its data from Settings.
 
 13.2. Upon termination you may ask us for (a) an export of the data in a structured format and (b) its deletion. We reply within at most [TO BE COMPLETED: 30] days. The termination notice is at most 2 months and the transition period at most 30 days, in line with Regulation (EU) 2023/2854 (Data Act). [TO BE VERIFIED BY LAWYER: applicability of Chapter VI to a free beta service.]
 

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { cleanSource } from "@/lib/apply-source";
 import { checkCv } from "@/lib/cv-file";
 import { hashFile } from "@/lib/duplicates";
+import { LEGAL_VERSION } from "@/lib/legal";
 import { triggerParse } from "@/lib/parser";
 import { adminClient } from "@/lib/supabase-admin";
 
@@ -59,7 +60,7 @@ export async function applyToJob(formData: FormData) {
   }
   const { data: cand, error } = await supabase.from("candidates").insert({
     organization_id: orgId, name, email, phone: phone || null, file_name: file.name.slice(0, 255), cv_url: path,
-    content_hash: await hashFile(file), source: "apply", apply_source: src, consent_at: new Date().toISOString(),
+    content_hash: await hashFile(file), source: "apply", apply_source: src, consent_at: new Date().toISOString(), consent_version: LEGAL_VERSION,
   }).select("id").single();
   if (error) {
     await supabase.storage.from("cvs").remove([path]);

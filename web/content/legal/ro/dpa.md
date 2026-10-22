@@ -22,7 +22,7 @@ Acordul face parte din Termenii și condițiile Nyra. Se acceptă de Utilizatoru
 | Natura prelucrării | Colectare (upload, import CSV, formular public), stocare, structurare, extragere de text și date, calcul de similaritate, afișare, export, ștergere. |
 | Categorii de persoane | Candidați, referenți menționați în CV (incidental), Utilizatorii Clientului (în notele și evaluările create). |
 | Categorii de date | Nume, email, telefon, locație, CV (fișier original și previzualizare PDF), text extras, competențe, experiență, educație, vechime, nivel de seniorat, vector de similaritate (calculat), note și scorecard-uri ale Clientului, status, sursa aplicării, momentul consimțământului (pentru formularul public). Pot apărea date speciale în conținutul CV-ului (vezi 5.3). |
-| Durata | Cât timp Clientul are cont, în limita termenului de păstrare setat de Client. Implicit [DE COMPLETAT: 12 luni de la ultima activitate, de implementat]. |
+| Durata | Cât timp Clientul are cont, în limita termenului de păstrare setat de Client. Implicit 12 luni de la data adăugării candidatului, configurabil de Client între 1 și 24 de luni; ștergerea se face automat, zilnic. |
 
 ## 3. Obligațiile Nyra
 
@@ -95,7 +95,7 @@ Descriem doar măsurile existente în produs. Nu declarăm certificări.
 - **Transport:** HTTPS cu HSTS; antete de securitate (CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy).
 - **Serviciul de extragere:** acces protejat cu token partajat secret; nume neutre de fișiere trimise către LlamaCloud (identificatori aleatori, nu numele original).
 - **Jurnal de activitate:** modificările sunt înregistrate fără conținutul personal al candidaților (câmpurile personale apar doar ca "redactat"); jurnalul nu poate fi modificat din aplicație.
-- **Ștergere:** ștergere definitivă a candidatului, a fișierelor lui și a datelor derivate; ștergere automată la expirarea perioadei setate. [DE COMPLETAT: automatizarea, în implementare.]
+- **Ștergere:** ștergere definitivă a candidatului, a fișierelor lui și a datelor derivate; ștergere automată zilnică la expirarea perioadei setate; ștergerea contului și a organizației din Setări; după procesare, jobul și fișierul trimise la LlamaCloud sunt șterse de la furnizor (best effort; altfel expiră la 48 de ore).
 - **Protecție la abuz:** câmp-capcană și plafon de aplicări pe formularul public.
 - **Teste automate** ale regulilor de acces și ale fluxurilor de ștergere și export, la dezvoltare.
 - **Nu declarăm:** backup-uri testate, redundanță, certificări (ISO 27001, SOC 2) sau teste de penetrare, atât timp cât nu sunt realizate. [DE COMPLETAT după lansarea comercială.]

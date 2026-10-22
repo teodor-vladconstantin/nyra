@@ -1,37 +1,34 @@
-# Task-uri tehnice pentru conformitate (neimplementate)
+# Task-uri tehnice pentru conformitate
 
-Sursa: auditul din Faza 1 și `docs/legal-research.md`. Nimic de aici nu e implementat, în afara punctelor marcate "FĂCUT". Ordinea e după impact asupra lansării comercială.
+Sursa: auditul din Faza 1, `docs/legal-research.md` și `docs/legal-benchmark.md`. Starea la 22 octombrie 2026.
 
-## Înainte de lansarea comercială
+## FĂCUT (cod, necesită doar acțiunile marcate "TU")
 
-1. **Clerk: mod "Invite-only".** Dashboard Clerk, pagina Access mode (în docurile mai vechi: Restrictions, "Enable restricted mode"). Invitațiile se trimit din Users, Invite. Fără cod. Verifică pe instanța **Production**, nu pe cea de dev.
-2. **Clerk: instanță Production** (acum e `pk_test`), DPA cu Clerk, verificarea certificării DPF.
-3. **LlamaCloud: endpoint UE.** Codul și documentele sunt trecute pe `https://api.cloud.eu.llamaindex.ai/api` (`parser/main.py`, suprascriere cu `LLAMA_API`). **De făcut manual, înainte de redeploy:** cheie de API nouă de pe cloud.eu.llamaindex.ai (cheia din SUA nu merge), pusă în `LLAMA_CLOUD_API_KEY` pe VM-ul Oracle, redeploy parser, test cu un CV. Rămâne: `do_not_cache` sau ștergere după procesare; DPA de la support@runllama.ai.
-4. **Retenție automată.** Job programat (pg_cron sau cron extern) care apelează logica din `purge_expired_candidates` pentru toate organizațiile, cu valoare implicită de 12 luni (acum `retention_months` e `null`, adică nelimitat, și curățarea e manuală din Setări). Plafon în UI 24 luni cu avertisment peste 12 (acum 1 până la 120).
-5. **Retenție `leads`:** ștergere automată la 12 luni de la ultimul contact; flux pentru cerere de ștergere.
-6. **Ștergere cont și organizație.** Acum nu există flux, iar ștergerea în Clerk nu se propagă în Supabase. Minim: procedură documentată (email la privacy@joben.eu) plus script. Ideal: buton în Setări plus webhook Clerk `user.deleted`.
-7. **Export complet al organizației** (Data Act, portabilitate): acum există export CSV al listei și JSON per candidat.
-8. **Formularul public de aplicare** (`web/lib/apply.ts`, `web/app/aplica/[id]/page.tsx`): linkul din bifă duce la `/confidentialitate` (politica Nyra), nu la nota pentru candidați a recrutorului. Adaugă câmp în Setări pentru linkul sau textul notei recrutorului (model: `docs/legal/ro/nota-candidati.md`) și afișează-l pe formular. Loghează versiunea textului acceptat lângă `consent_at`. Dacă se păstrează consimțământul ca temei, adaugă retragere.
-9. **Verifică regiunea funcțiilor Vercel** (Project Settings, Functions) și fixeaz-o pe UE (de exemplu `fra1`). Implicit poate fi SUA, iar CV-urile trec prin ele la încărcare.
-10. **Supabase: plan Free** (vizibil în dashboard). Fără backup-uri zilnice și cu auto-pauză. Pentru lansare comercială, plan Pro; apoi completează durata backup-urilor în documente.
-11. **Confirmă regiunea Oracle a VM-ului parserului** (consola nu a încărcat lista de resurse la verificare; regiunea afișată era eu-amsterdam-1).
-12. **Procedură pentru încălcări de securitate** (DPA 3.7 promite 48 de ore) și registru de incidente și de cereri ale persoanelor vizate (`docs/legal/ro/registru-prelucrari.md`, secțiunea C).
-13. **Audit log:** decide termenul de păstrare (conține `actor_id` și este imuabil). Posibil: pseudonimizare la ștergerea contului. Necesită modificarea trigger-ului `audit_immutable`.
-14. **DSA, anunțuri publice:** mecanism simplu de raportare a unui anunț (acum doar emailul din T&C 10.2).
+- Pagini legale RO/EN, banner de cookies, acceptare T&C și DPA cu log (`legal_acceptances`), footer cu date legale.
+- **Retenție automată:** implicit 12 luni, 1-24 luni, zilnic (`/api/cron/retention`, `vercel.json`), include leads (12 luni), cereri rezolvate (12 luni) și jurnal de activitate (24 luni). **TU:** setează `CRON_SECRET` în Vercel (valoare: `openssl rand -hex 32`; fără el, ruta rămâne închisă și nimic nu se șterge automat).
+- **Ștergere cont:** Setări, "Șterge contul și datele" (organizație, candidați, fișiere, jurnal, profil, utilizator Clerk). Rămân acceptările legale ca dovadă. Doar pentru organizații cu un singur membru.
+- **Export complet al organizației:** `/admin/gdpr/export-all` (JSON, cu linkuri la CV-uri valabile 24 de ore), din Setări.
+- **Notă pentru candidați** generată per organizație (`/aplica/<job>/informare`), cu email de contact și link propriu opțional în Setări; versiunea textului acceptat se salvează în `candidates.consent_version`.
+- **Cereri ale candidaților** (formular pe pagina de informare, listă și "Rezolvat" în Setări).
+- **Raportare anunț** (link pe pagina de aplicare, DSA).
+- **LlamaCloud:** endpoint UE în cod; după procesare se șterg jobul și fișierul de la furnizor (`parser/main.py`, best effort). **TU:** vezi mai jos.
+- **Regiunea funcțiilor Vercel:** `dub1` (Dublin) în `vercel.json`, aproape de Supabase (eu-west-1).
+- Procedură de incidente: `docs/legal/ro/procedura-incidente.md`.
 
-## La adăugarea PostHog și Sentry
+## DE FĂCUT DE TINE (conturi, chei, facturare)
 
-15. **PostHog:** inițializează-l **doar** dacă `getConsent()?.analytics === true` (vezi `web/lib/consent.ts`; ascultă `CONSENT_EVENT` pentru schimbări). Instanța UE (`eu.posthog.com`). Actualizează CSP în `next.config.mjs` (script-src și connect-src). Mută PostHog în tabelul "Activi" din `subprocesatori.md`, în cookies și în registru, și anunță clienții înainte (DPA 3.5).
-16. **Sentry:** instanța UE (`de.sentry.io`), `sendDefaultPii: false`, scrubbing pentru date personale în excepții (parserul poate include nume sau CV-uri). Replay doar cu consimțământ.
-17. **Resend** (dacă îl adaugi): expeditor pe un **subdomeniu dedicat**, nu pe joben.eu direct, ca să nu fie confundat cu Joben; adaugă-l în subprocesatori, în DPA și în nota pentru candidați, pentru că Nyra ar trimite emailuri către candidați.
+1. **Migrările:** `20261022000000_legal_acceptance.sql` (aplicată în producție) și `20261022010000_compliance.sql` (vezi starea în mesajul final).
+2. **LlamaCloud EU:** cont și cheie nouă pe cloud.eu.llamaindex.ai (cheia din SUA nu merge pe endpoint-ul UE); pune-o în `LLAMA_CLOUD_API_KEY` pe VM-ul Oracle; redeploy parser; test cu un CV. Cere DPA la support@runllama.ai.
+3. **Vercel:** `CRON_SECRET` (mai sus). După deploy, verifică în Project Settings, Functions că regiunea este Dublin.
+4. **Clerk:** mod "Invite-only" (Dashboard, Access mode); instanță Production (acum `pk_test`); DPA; verifică certificarea DPF.
+5. **Supabase:** plan Free (fără backup-uri zilnice, auto-pauză). Plan Pro pentru lansare comercială; apoi completează durata backup-urilor în documente.
+6. **Oracle:** confirmă că VM-ul parserului este în regiunea eu-amsterdam-1.
+7. **Documente:** rezolvă markerii (`grep -R "DE COMPLETAT\|DE VERIFICAT\|TO BE COMPLETED\|TO BE VERIFIED" web/content/legal`); apoi scoate `noindex` din `app/(marketing)/[doc]/page.tsx`. Consultație cu un avocat pe zonele din `docs/legal-research.md`.
+8. **Cookies:** în DevTools, Application, pe site-ul live după sign-in: lista reală (Clerk, Turnstile, Clerk Protect, `theme`); completează tabelul din `cookies.md`.
 
-## Verificări în browser înainte de publicare
+## NEIMPLEMENTAT (decizii sau dependențe)
 
-18. În DevTools, Application, pe site-ul live: lista reală de cookie-uri și localStorage după sign-in (Clerk, Turnstile, Clerk Protect, `theme`). Completează tabelul din `cookies.md`.
-19. Rulează `grep -R "DE COMPLETAT\|DE VERIFICAT\|TO BE COMPLETED\|TO BE VERIFIED" web/content/legal`; paginile au markerii evidențiați și sunt `noindex`. Elimină `robots: noindex` din `app/(marketing)/[doc]/page.tsx` abia după ce sunt rezolvați.
-
-## FĂCUT în Faza 4
-- Pagini `/termeni`, `/confidentialitate`, `/cookies`, `/subprocesatori`, `/dpa` cu comutator RO/EN (`?lang=en`).
-- Banner de cookies cu refuz la fel de ușor ca acceptul, preferințe, consimțământ cu dată și versiune, redeschidere din footer ("Setări cookie"). Nimic opțional nu se încarcă (nimic opțional nu există).
-- Acceptare T&C, DPA și clauze exprese după înregistrare, cu log (utilizator, moment, versiune) în `legal_acceptances`; poartă în `/admin` pentru conturile fără acceptarea versiunii curente.
-- Linkuri legale și datele prestatorului în footer; footerul apare pe landing.
+- **PostHog / Sentry / Resend:** nu sunt instalate. La adăugare: PostHog doar dacă `getConsent()?.analytics` (vezi `web/lib/consent.ts`), instanțe UE, CSP în `next.config.mjs`, mutare în tabelul "Activi" din `subprocesatori.md`, în cookies și în registru, anunț către clienți (DPA 3.5). Sentry: `sendDefaultPii: false`, scrubbing; Replay doar cu consimțământ. Resend: expeditor pe subdomeniu dedicat (nu joben.eu), adăugat în subprocesatori, DPA și nota pentru candidați.
+- **Reînnoirea acordului candidatului prin email** (practică Teamtailor, Greenhouse, Recruitee): cere Resend.
+- **Echipe multi-utilizator** (invitații în organizație): amânat; T&C 4.4 are un marcaj.
+- **Pseudonimizarea `actor_id` din jurnal** la ștergerea unui singur utilizator dintr-o organizație cu mai mulți membri: nu e cazul cât timp organizațiile au un singur membru.

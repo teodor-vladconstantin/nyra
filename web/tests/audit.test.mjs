@@ -80,9 +80,12 @@ await assert.rejects(db.query("select audit_event($1,'delete','candidates',null)
 assert.equal(await count("select 1 from audit_log where action = 'export' and actor_id = $1", [A]), 1);
 
 // ---- Retenția: doar adminii o schimbă; purge șterge doar ce e mai vechi ----
-await assert.rejects(db.query("select set_retention($1, 0)", [org1])); // check 1..120
+await assert.rejects(db.query("select set_retention($1, 0)", [org1])); // 1..24
+await assert.rejects(db.query("select set_retention($1, 25)", [org1]));
+await assert.rejects(db.query("select set_retention($1, null)", [org1]), /între 1 și 24/); // obligatorie, implicit 12
+await db.query("select set_retention($1, 24)", [org1]);
+assert.deepEqual((await one("select changes->'retention_months' r from audit_log where entity_type='organizations' and action='update' and changes ? 'retention_months' order by created_at desc, id limit 1")).r, { old: "12", new: "24" });
 await db.query("select set_retention($1, 12)", [org1]);
-assert.deepEqual((await one("select changes->'retention_months' r from audit_log where entity_type='organizations' and action='update'")).r, { new: "12" });
 await su();
 const old = await one("insert into candidates (organization_id, cv_url, preview_path, created_at) values ($1,$2,$3, now() - interval '13 months') returning id", [org1, `${org1}/old.docx`, `${org1}/old.pdf`]);
 await db.query("insert into candidates (organization_id, cv_url, created_at) values ($1,$2, now() - interval '11 months')", [org1, `${org1}/new.pdf`]);
@@ -94,9 +97,6 @@ assert.deepEqual(purged.map((r) => [r.candidate_id, r.files]), [[old.id, [`${org
 assert.equal(await count("select 1 from candidates where cv_url like $1", ["%/new.pdf"]), 1);
 assert.deepEqual((await one("select changes from audit_log where action = 'purge'")).changes, { deleted: 1, retention_months: 12 });
 assert.equal((await db.query("select * from purge_expired_candidates($1)", [org1])).rows.length, 0); // idempotent
-// Fără retenție setată nu se șterge nimic
-await db.query("select set_retention($1, null)", [org1]);
-assert.equal((await db.query("select * from purge_expired_candidates($1)", [org1])).rows.length, 0);
 assert.equal(await count("select 1 from candidates where cv_url like $1", ["%/new.pdf"]), 1);
 
 // ---- GDPR erase: șterge candidatul în cascadă, întoarce fișierele, lasă urmă fără PII ----

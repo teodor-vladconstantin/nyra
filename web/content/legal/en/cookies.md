@@ -20,7 +20,7 @@ Without these, authentication and security do not work. Under Law 506/2004 Art. 
 | `__client_uat` | Clerk | Syncs authentication state between tabs | [TO BE VERIFIED, approx. 1 year] |
 | `__clerk_db_jwt` | Clerk | Technical token (development only) | Session |
 | Cloudflare Turnstile / Clerk Protect | Cloudflare / Clerk | Anti-bot check at registration, only on registration pages | [TO BE VERIFIED: what it stores, if anything] [TO BE VERIFIED BY LAWYER: whether strictly necessary] |
-| `joben_nyra_consent` (to be implemented) | Nyra | Stores your cookie choice, with the date and policy version | 12 months |
+| `nyra_consent` (local storage) | Nyra | Stores your cookie choice, with the date and policy version | 12 months |
 
 ## Preferences (local storage)
 
