@@ -3,6 +3,7 @@ import { roRO } from "@clerk/localizations";
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import { Suspense } from "react";
+import { CookieConsent } from "@/components/cookie-consent";
 import { Toaster } from "@/components/ui/sonner";
 import { ToastFromParams } from "@/components/toast-from-params";
 import { ThemeProvider } from "@/components/shell/theme-provider";
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <Suspense>
               <ToastFromParams />
             </Suspense>
+            <CookieConsent />
           </ThemeProvider>
         </ClerkProvider>
       </body>

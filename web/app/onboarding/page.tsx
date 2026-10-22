@@ -25,7 +25,7 @@ async function createOrganization(formData: FormData) {
     console.error("create_organization", error);
     redirect(`/onboarding?toast=${encodeURIComponent("Nu am putut crea organizația. Încearcă din nou.")}&type=error`);
   }
-  redirect("/admin");
+  redirect("/acceptare");
 }
 
 export default async function OnboardingPage() {

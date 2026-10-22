@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { CookieSettingsLink } from "@/components/cookie-consent";
 import { Brand } from "@/components/shell/brand";
 import { wrap } from "./section";
 
 const COLS = [
   { title: "Produs", links: [["Funcții", "/produs"], ["Prețuri", "/preturi"], ["Întrebări frecvente", "/faq"]] },
   { title: "Companie", links: [["Despre", "/despre"], ["Contact", "/contact"], ["Autentificare", "/sign-in"]] },
-  { title: "Legal", links: [["Confidențialitate", "/confidentialitate"], ["Termeni", "/termeni"]] },
+  { title: "Legal", links: [["Termeni", "/termeni"], ["Confidențialitate", "/confidentialitate"], ["Cookies", "/cookies"], ["Subprocesatori", "/subprocesatori"], ["DPA", "/dpa"]] },
 ] as const;
 
 export function Footer() {
@@ -23,12 +24,16 @@ export function Footer() {
               {c.links.map(([label, href]) => (
                 <li key={href}><Link href={href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{label}</Link></li>
               ))}
+              {c.title === "Legal" && <li><CookieSettingsLink /></li>}
             </ul>
           </nav>
         ))}
       </div>
       <div className="border-t border-border">
-        <p className={`${wrap} py-5 text-caption text-muted-foreground`}>© {new Date().getFullYear()} Joben. Toate drepturile rezervate.</p>
+        {/* Date de identificare a prestatorului (Legea 365/2002, art. 5). */}
+        <p className={`${wrap} py-5 text-caption leading-relaxed text-muted-foreground`}>
+          © {new Date().getFullYear()} TETA ABC SRL · CUI 22404824 · Reg. Com. J2007001135104 · Str. Centrală nr. 169, sat Mărăcineni, jud. Buzău, 127325 · hello@joben.eu
+        </p>
       </div>
     </footer>
   );

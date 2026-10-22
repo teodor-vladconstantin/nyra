@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const isProtected = createRouteMatcher(["/admin(.*)", "/onboarding(.*)"]);
+const isProtected = createRouteMatcher(["/admin(.*)", "/onboarding(.*)", "/acceptare(.*)"]);
 
 // Aplicația cere sesiune Clerk; site-ul public rămâne deschis. Neautentificații ajung la /sign-in cu redirect_url înapoi.
 export default clerkMiddleware(

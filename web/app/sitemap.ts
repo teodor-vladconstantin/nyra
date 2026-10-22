@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 export const revalidate = 3600;
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nyra.joben.eu";
-const PAGES = ["", "/produs", "/preturi", "/faq", "/contact", "/despre", "/confidentialitate", "/termeni"];
+const PAGES = ["", "/produs", "/preturi", "/faq", "/contact", "/despre"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages: MetadataRoute.Sitemap = PAGES.map((p) => ({ url: `${BASE}${p}`, changeFrequency: "monthly", priority: p === "" ? 1 : 0.6 }));
