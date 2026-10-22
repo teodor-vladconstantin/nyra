@@ -58,7 +58,7 @@ This agreement is part of the Nyra Terms of Use. It is accepted by the User who 
 
 4.2. Some subprocessors are in the USA (Annex 3). Transfers rely on the EU-US Data Privacy Framework (adequacy decision of 10 July 2023), where the supplier is certified, and, as a fallback and where it is not certified, on standard contractual clauses (Decision (EU) 2021/914, module 3 between Nyra and the subprocessor). If the adequacy decision is invalidated or suspended, we will use standard contractual clauses and supplementary measures, or stop the transfer. Case C-703/25 P is pending. [TO BE VERIFIED BY LAWYER.]
 
-4.3. CV data sent to LlamaCloud currently goes to the US endpoint. [TO BE COMPLETED: replace with "EU (Frankfurt)" after migrating to the EU endpoint.]
+4.3. CV data sent to LlamaCloud is processed through the EU region endpoint (Frankfurt), according to LlamaIndex's documentation. [TO BE VERIFIED: whether calls to LlamaIndex's model providers stay in the EU; their subprocessor list is not public.]
 
 ## 5. Customer's obligations
 

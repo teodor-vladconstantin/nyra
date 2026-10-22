@@ -56,7 +56,7 @@ Acordul face parte din Termenii și condițiile Nyra. Se acceptă de Utilizatoru
 
 4.2. Unii subprocesatori sunt din SUA (Anexa 3). Transferurile se bazează pe Cadrul de confidențialitate UE-SUA (Decizia de adecvare din 10 iulie 2023), acolo unde furnizorul este certificat, și, ca soluție de rezervă și unde nu e certificat, pe clauzele contractuale standard (Decizia (UE) 2021/914, modulul 3 între Nyra și subprocesator). Dacă decizia de adecvare este invalidată sau suspendată, vom folosi clauzele contractuale standard și măsuri suplimentare, sau vom opri transferul. Cauza C-703/25 P este pendinte. [DE VERIFICAT DE AVOCAT.]
 
-4.3. Datele din CV trimise la LlamaCloud merg în prezent către endpointul SUA. [DE COMPLETAT: înlocuiți cu "UE (Frankfurt)" după migrarea la endpointul UE.]
+4.3. Datele din CV trimise la LlamaCloud sunt procesate prin endpointul din regiunea UE (Frankfurt), conform documentației LlamaIndex. [DE VERIFICAT: dacă apelurile către furnizorii de modele ai LlamaIndex rămân în UE; lista lor de subprocesatori nu este publică.]
 
 ## 5. Obligațiile Clientului
 

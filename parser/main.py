@@ -33,7 +33,8 @@ SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SUPABASE_KEY = os.environ["SUPABASE_SECRET_KEY"]
 LLAMA_KEY = os.environ["LLAMA_CLOUD_API_KEY"]
 PARSER_TOKEN = os.environ["PARSER_TOKEN"]
-LLAMA_API = "https://api.cloud.llamaindex.ai/api"
+# Regiunea UE (Frankfurt): datele CV-urilor rămân în UE. Cheia de API trebuie creată pe cloud.eu.llamaindex.ai; o cheie din regiunea SUA nu funcționează aici.
+LLAMA_API = os.getenv("LLAMA_API", "https://api.cloud.eu.llamaindex.ai/api")
 LLAMA_URL = f"{LLAMA_API}/v2/parse"
 SOFFICE = shutil.which("soffice") or shutil.which("libreoffice")
 
