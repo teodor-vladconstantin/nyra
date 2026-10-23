@@ -3,7 +3,6 @@ import { ArrowRight } from "lucide-react";
 import { Cta } from "@/components/marketing/cta";
 import { DIFFERENCES, FAQS, FEATURES, STEPS } from "@/components/marketing/content";
 import { FaqList } from "@/components/marketing/faq-list";
-import { Preview } from "@/components/marketing/preview";
 import { Section, wrap } from "@/components/marketing/section";
 import { Button } from "@/components/ui/button";
 
@@ -34,7 +33,10 @@ export default function Landing() {
               <Button asChild size="lg" variant="outline"><Link href="/produs">Vezi cum funcționează</Link></Button>
             </div>
           </div>
-          <Preview />
+          <figure className="overflow-hidden rounded-xl border border-border bg-card shadow-pop">
+            <video src="/demo.webm" autoPlay muted loop playsInline preload="metadata" aria-label="Demonstrație Nyra: CV-uri încărcate, extrase automat și filtrate (date fictive)" className="aspect-video w-full" />
+            <figcaption className="border-t border-border px-4 py-2 text-caption text-muted-foreground">Demonstrație cu date fictive.</figcaption>
+          </figure>
         </div>
         <ul className={`${wrap} grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border py-5 text-sm text-muted-foreground sm:flex sm:flex-wrap sm:justify-between`}>
           {TRUST.map((t) => (
